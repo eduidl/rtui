@@ -91,8 +91,26 @@ class Ros2(RosInterface):
         return names
 
     def list_services(self) -> list[str]:
+        def filter(_name: str, types: list[str]) -> bool:
+            if len(types) == 0:
+                return True
+
+            BLOCK_LIST = [
+                "rcl_interfaces/srv/DescribeParameters",
+                "rcl_interfaces/srv/GetParameters",
+                "rcl_interfaces/srv/GetParameterTypes",
+                "rcl_interfaces/srv/ListParameters",
+                "rcl_interfaces/srv/SetParameters",
+                "rcl_interfaces/srv/SetParametersAtomically",
+            ]
+
+            if types[0] in BLOCK_LIST:
+                return False
+
+            return True
+
         services = ros2service.api.get_service_names_and_types(node=self.node)
-        names = sorted({name for name, _ in services})
+        names = sorted({name for name, types in services if filter(name, types)})
         return names
 
     def list_actions(self) -> list[str]:
