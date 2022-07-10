@@ -67,6 +67,7 @@ jobs:
 
       - name: Unit Test
         run: |
+          source /opt/ros/${{ matrix.ros.distro }}/setup.bash
           roscore &
           poetry run task test
 
@@ -106,4 +107,6 @@ jobs:
           required-ros-distributions: ${{ matrix.ros.distro }}
 
       - name: Unit Test
-        run: poetry run task check
+        run: |
+          source /opt/ros/${{ matrix.ros.distro }}/setup.bash
+          poetry run task check
