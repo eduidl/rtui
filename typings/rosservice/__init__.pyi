@@ -1,0 +1,3 @@
+from __future__ import annotations
+
+def get_service_headers(service_name: str, service_uri: str) -> dict[str, str]: ...

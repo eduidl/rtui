@@ -1,0 +1,203 @@
+from __future__ import annotations
+
+import importlib
+import sys
+import typing as t
+from datetime import datetime
+from threading import Thread
+
+import rosgraph
+import rospy
+import rosservice
+from rosgraph import Master
+from typing_extensions import TypeAlias
+
+from .ros import (
+    DISPLAY_ARRAY_LENGTH_MAX,
+    NodeInfo,
+    RosInterface,
+    ServiceInfo,
+    TopicInfo,
+)
+
+_RosMasterEachSystemState: TypeAlias = t.List[t.Tuple[str, t.List[str]]]
+_RosMasterSystemState: TypeAlias = t.Tuple[
+    _RosMasterEachSystemState, _RosMasterEachSystemState, _RosMasterEachSystemState
+]
+
+
+class Ros1(RosInterface):
+    master: Master = Master("/rtui_node")
+    thread: Thread
+
+    def __init__(self, **_kwargs: t.Any) -> None:
+        try:
+            rospy.init_node("rtui_node", anonymous=True, disable_rosout=True)
+        except rospy.exceptions.ROSInitException as e:
+            print("Fail to initialize ROS node. Is master running?")
+            print(f"what: {e}")
+            sys.exit(1)
+        self.thread = Thread(target=lambda: rospy.spin(), daemon=True)
+        self.thread.start()
+
+        super().__init__()
+
+    def terminate(self) -> None:
+        rospy.signal_shutdown("exit")
+        self.thread.join()
+
+    def now(self) -> datetime:
+        return datetime.fromtimestamp(rospy.Time.now().to_sec())
+
+    def get_service_type(self, service: str) -> str | None:
+        uri = self.master.lookupService(service)
+        return rosservice.get_service_headers(service, uri).get("type", None)
+
+    def list_nodes(self) -> list[str]:
+        state = self.master.getSystemState()
+        nodes: list[str] = []
+        for s in state:
+            for _, l in s:
+                nodes.extend((n for n in l if not n.startswith("/rtui_node")))
+        return sorted(set(nodes))
+
+    def list_topics(self) -> list[str]:
+        pubs, subs, _ = self.master.getSystemState()
+        pub_names = {pub for pub, _ in pubs}
+        sub_names = {sub for sub, _ in subs}
+        names = sorted(pub_names.union(sub_names))
+        return names
+
+    def list_services(self) -> list[str]:
+        _, _, srvs = self.master.getSystemState()
+        return sorted(s for s, _ in srvs if not s.startswith("/rtui_node"))
+
+    def list_actions(self) -> t.NoReturn:
+        raise NotImplementedError("ROS1 does not support")
+
+    def get_node_info(self, node_name: str) -> NodeInfo:
+        pubs, subs, srvs = self.master.getSystemState()
+        topic_types = self.master.getTopicTypes()
+
+        return NodeInfo(
+            name=node_name,
+            publishers=[
+                (topic, search_topic_type(topic, topic_types))
+                for topic, nodes in pubs
+                if node_name in nodes
+            ],
+            subscribers=[
+                (topic, search_topic_type(topic, topic_types))
+                for topic, nodes in subs
+                if node_name in nodes
+            ],
+            service_servers=[
+                (srv, self.get_service_type(srv))
+                for srv, nodes in srvs
+                if node_name in nodes
+            ],
+        )
+
+    def get_topic_info(self, topic_name: str) -> TopicInfo:
+        pubs, subs, _ = self.master.getSystemState()
+        topic_types = self.master.getTopicTypes()
+
+        topic_type = search_topic_type(topic_name, topic_types)
+
+        def _filter_topic(
+            topics: _RosMasterEachSystemState, topic_name: str
+        ) -> t.Generator[tuple[str, None], None, None]:
+            for topic, nodes in topics:
+                if topic != topic_name:
+                    continue
+
+                for node in nodes:
+                    yield node, None
+
+        return TopicInfo(
+            name=topic_name,
+            types=[topic_type] if topic_type else [],
+            publishers=list(_filter_topic(pubs, topic_name)),
+            subscribers=list(_filter_topic(subs, topic_name)),
+        )
+
+    def get_service_info(self, service_name: str) -> ServiceInfo:
+        _, _, srvs = self.master.getSystemState()
+
+        service_type = self.get_service_type(service_name)
+
+        def _filter_srv(
+            srvs: _RosMasterEachSystemState, srv_name: str
+        ) -> t.Generator[str, None, None]:
+            for srv, nodes in srvs:
+                if srv != srv_name:
+                    continue
+
+                for node in nodes:
+                    yield node
+
+        return ServiceInfo(
+            name=service_name,
+            types=[service_type] if service_type else [],
+            servers=list(_filter_srv(srvs, service_name)),
+        )
+
+    def get_action_info(self, action_name: str) -> t.NoReturn:
+        raise NotImplementedError("ROS1 does not support")
+
+    def subscribe_topic(
+        self, topic_name: str, callback: t.Callable[..., None]
+    ) -> t.Any:
+        topic_types = self.master.getTopicTypes()
+
+        topic_type = search_topic_type(topic_name, topic_types)
+        if topic_type is None:
+            raise RuntimeError("unknown type")
+
+        package_name, type_name = topic_type.split("/")
+
+        type_ = getattr(importlib.import_module(f"{package_name}.msg"), type_name)
+
+        return rospy.Subscriber(topic_name, type_, callback, queue_size=5)
+
+    def unregister_subscriber(self, sub: rospy.Subscriber) -> None:
+        sub.unregister()
+
+    @classmethod
+    def format_msg(cls, msg: t.Any, indent: int = 0) -> str:
+        out = ""
+        for field, type_ in zip(msg.__slots__, msg._slot_types):
+            val = getattr(msg, field)
+            out += f"\n{' ' * indent}{field}:"
+            if isinstance(val, (bool, int, float)):
+                out += f" {val}"
+            elif isinstance(val, str):
+                out += f' "{val}"'
+            elif isinstance(val, (list, bytes)):
+                length = len(val)
+                if length == 0:
+                    out += " []"
+                elif length > DISPLAY_ARRAY_LENGTH_MAX:
+                    if "[]" in type_:
+                        out += f' "<{type_}, length: {length}>"'
+                    else:
+                        out += f' "<{type_}>"'
+                elif isinstance(val, bytes):
+                    out += " [" + ", ".join(str(val[i]) for i in range(length)) + "]"
+                elif isinstance(val[0], (bool, int, float, str)):
+                    out += format(val)
+                else:
+                    for v in val:
+                        out += f"\n{' ' * (indent + 2)}-"
+                        out += cls.format_msg(v, indent + 4)
+            else:
+                out += cls.format_msg(val, indent + 2)
+
+        return out
+
+
+def search_topic_type(topic: str, topic_types: list[tuple[str, str]]) -> str | None:
+    matches = [t_type for t_name, t_type in topic_types if t_name == topic]
+    if matches and matches[0] != rosgraph.names.ANYTYPE:
+        return matches[0]
+    return None
