@@ -4,6 +4,7 @@ import array
 import typing as t
 from datetime import datetime
 from threading import Thread
+from time import sleep
 
 import numpy as np
 import rclpy
@@ -68,6 +69,8 @@ class Ros2(RosInterface):
         executor.add_node(self.node)
         self.thread = Thread(target=executor.spin, daemon=True)
         self.thread.start()
+
+        sleep(0.01)
 
         super().__init__()
 
