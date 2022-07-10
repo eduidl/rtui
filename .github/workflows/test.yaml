@@ -42,11 +42,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
       - name: Cache Packages
         uses: actions/cache@v2
         with:
           path: ~/.local
-          key: test-ros1-${{ matrix.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
+          key: test-ros1-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
