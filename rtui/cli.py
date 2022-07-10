@@ -1,7 +1,7 @@
 import click
 
 from .app import InspectApp, InspectMode
-from .ros import get_ros_cls, init_ros
+from .ros import init_ros, is_ros1
 
 
 def inspect_common(mode: InspectMode) -> None:
@@ -29,8 +29,7 @@ def services() -> None:
 
 @click.command
 def actions() -> None:
-    cls = get_ros_cls()
-    if cls.__name__ == "Ros1":
+    if is_ros1():
         print("actions command does not support ROS1")
         return
     inspect_common(InspectMode.Actions)

@@ -138,6 +138,14 @@ class RosInterface(ABC):
         ...
 
 
+def is_ros1() -> bool:
+    return environ.get("ROS_VERSION") == "1"
+
+
+def is_ros2() -> bool:
+    return environ.get("ROS_VERSION") == "2"
+
+
 def get_ros_cls() -> t.Type["RosInterface"]:
     ros_version = environ.get("ROS_VERSION")
 
