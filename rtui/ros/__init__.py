@@ -8,6 +8,8 @@ from .ros import (
     TopicInfo,
     get_ros_cls,
     init_ros,
+    is_ros1,
+    is_ros2,
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "TopicInfo",
     "get_ros_cls",
     "init_ros",
+    "is_ros1",
+    "is_ros2",
 ]

@@ -41,6 +41,7 @@ check = "task check_lint && task check_format && task check_type"
 check_lint = "flake8 ."
 check_format = "black . --check && isort . --check --diff"
 check_type = "mypy rtui --strict"
+test = "python -m unittest discover tests -v"
 
 [tool.isort]
 profile = "black"

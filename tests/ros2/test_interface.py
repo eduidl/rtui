@@ -5,7 +5,9 @@ import typing as t
 import unittest
 import warnings
 
-from rtui.ros import init_ros
+from rtui.ros import init_ros, is_ros2
+
+TestCase: t.Type = unittest.TestCase if is_ros2() else object
 
 
 def ignore_warnings(test_func):
@@ -17,7 +19,7 @@ def ignore_warnings(test_func):
     return do_test
 
 
-class TestRos2Interface(unittest.TestCase):
+class TestRos2Interface(TestCase):
     NODE1: t.ClassVar[sp.Popen | None] = None
     NODE2: t.ClassVar[sp.Popen | None] = None
 
@@ -77,7 +79,8 @@ class TestRos2Interface(unittest.TestCase):
         )
         assert info.action_clients
         self.assertIn(
-            ("/action_client", "tf2_msgs/action/LookupTransform"), info.action_clients
+            ("/action_client", "tf2_msgs/action/LookupTransform"),
+            info.action_clients,
         )
 
     def test_get_topic_info(self):
