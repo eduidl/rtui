@@ -37,7 +37,23 @@ $ python3.8 -m pip install --user git+https://github.com/eduidl/rtui.git
 
 ![demo](doc/demo.gif)
 
-## Sub commands
+## Usage
+
+```
+$ rtui --help
+Usage: rtui [OPTIONS] COMMAND [ARGS]...
+
+  Terminal User Interface for ROS User
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  actions   Inspect ROS actions (ROS1 is not supported)
+  nodes     Inspect ROS nodes
+  services  Inspect ROS services
+  topics    Inspect ROS topics
+```
 
 - nodes/topics/services/actions
   - get a list of nodes, topics, or etc.

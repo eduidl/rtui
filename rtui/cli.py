@@ -12,22 +12,22 @@ def inspect_common(mode: InspectMode) -> None:
         ros.terminate()
 
 
-@click.command
+@click.command(help="Inspect ROS nodes")
 def nodes() -> None:
     inspect_common(InspectMode.Nodes)
 
 
-@click.command
+@click.command(help="Inspect ROS topics")
 def topics() -> None:
     inspect_common(InspectMode.Topics)
 
 
-@click.command
+@click.command(help="Inspect ROS services")
 def services() -> None:
     inspect_common(InspectMode.Services)
 
 
-@click.command
+@click.command(help="Inspect ROS actions (ROS1 is not supported)")
 def actions() -> None:
     if is_ros1():
         print("actions command does not support ROS1")
@@ -35,7 +35,7 @@ def actions() -> None:
     inspect_common(InspectMode.Actions)
 
 
-@click.group
+@click.group(help="Terminal User Interface for ROS User")
 def cli() -> None:
     pass
 
