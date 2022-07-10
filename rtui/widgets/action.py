@@ -22,7 +22,7 @@ def text_from_action_info(info: ActionInfo, hover_node: str) -> Text:
                     link.stylize("underline")
                 link.on(click=f"node_link('{node}')")
                 link.apply_meta(dict(hover_node=node))
-                out.extend(["\n  ", link, f" {type_}"])
+                out.extend(["\n  ", link, f" [{type_}]"])
         else:
             out.append(" None")
 

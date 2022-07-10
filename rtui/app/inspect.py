@@ -6,7 +6,7 @@ from enum import Enum, auto
 
 from textual.app import App
 from textual.driver import Driver
-from textual.events import Mount, Resize
+from textual.events import Mount
 from textual.widgets import Footer, ScrollView, TreeClick, TreeControl
 
 from ..event import RosEntityLinkClick
@@ -25,8 +25,9 @@ class InspectMode(Enum):
 
 
 class InspectApp(App):
-    _mode: InspectMode = InspectMode.Nodes
     _ros: RosInterface
+    _mode: InspectMode = InspectMode.Nodes
+    _entity: RosEntity | None = None
     _history: History[RosEntity] = History(20)
     _topic_view: TopicEcho | None = None
 
@@ -56,6 +57,9 @@ class InspectApp(App):
     ) -> None:
         prev_mode = self._mode
 
+        await self.hide_topic_echo()
+
+        self._entity = entity
         if entity.type == RosEntityType.Node:
             self._mode = InspectMode.Nodes
             await self.show_node(entity.name)
@@ -100,65 +104,78 @@ class InspectApp(App):
 
     async def show_node(self, node_name: str) -> None:
         await self.body.update(NodeView(self._ros, node_name))
-        await self.stop_topic_echo()
 
     async def show_topic(self, topic_name: str) -> None:
         await self.body.update(TopicView(self._ros, topic_name))
 
-        await self.stop_topic_echo()
-        self._topic_view = TopicEcho(self._ros, topic_name)
-        await self.echo_view.update(self._topic_view)
+    async def show_topic_echo(self) -> None:
+        await self.hide_topic_echo()
 
-    async def stop_topic_echo(self) -> None:
+        if self._entity:
+            self._topic_view = TopicEcho(self._ros, self._entity.name)
+            await self.echo_view.update(self._topic_view)
+            self.horizontal.visible = True
+
+            self.grid.place(
+                main1=self.body,
+                main2=self.horizontal,
+                main3=self.echo_view,
+            )
+
+    async def hide_topic_echo(self) -> None:
         if self._topic_view:
             await self._topic_view.stop()
             self._topic_view = None
+            self.horizontal.visible = False
+
+            self.grid.place(main=self.body)
 
         await self.echo_view.update("")
 
     async def show_service(self, service_name: str) -> None:
         await self.body.update(ServiceView(self._ros, service_name))
-        await self.stop_topic_echo()
 
     async def show_action(self, action_name: str) -> None:
         await self.body.update(ActionView(self._ros, action_name))
-        await self.stop_topic_echo()
 
     async def on_load(self) -> None:
-        await self.bind("b", "back", "Back")
-        await self.bind("f", "forward", "Forward")
+        await self.bind("b", "back", "Prev Page")
+        await self.bind("f", "forward", "Next Page")
         await self.bind("r", "reload", "Reload")
+        await self.bind("e", "toggle_echo", "Toggle Echo")
         await self.bind("q", "quit", "Quit")
 
     async def on_mount(self, _event: Mount) -> None:
+        await self.view.dock(Footer(), edge="bottom")
+
+        self.grid = await self.view.dock_grid(edge="left", name="left")
+
+        self.grid.add_column(fraction=1, name="left")
+        self.grid.add_column(size=1, name="vertical")
+        self.grid.add_column(fraction=2, name="right")
+
+        self.grid.add_row(fraction=1, name="top")
+        self.grid.add_row(size=1, name="horizontal")
+        self.grid.add_row(fraction=1, name="bottom")
+
+        self.grid.add_areas(
+            column="left,top-start|bottom-end",
+            vertical="vertical,top-start|bottom-end",
+            main="right,top-start|bottom-end",
+            main1="right,top",
+            main2="right,horizontal",
+            main3="right,bottom",
+        )
+
         self.sidebar = ScrollView(auto_width=True)
         self.body = ScrollView(auto_width=True)
+        self.horizontal = Separator(horizontal=True)
         self.echo_view = ScrollView(auto_width=True)
 
-        await self.view.dock(Footer(), edge="bottom")
-        await self.view.dock(
-            self.sidebar,
-            edge="left",
-            size=(self.console.width - 2) // 3,
-        )
-        await self.view.dock(
-            Separator(),
-            edge="left",
-            size=1,
-        )
-        await self.view.dock(
-            self.body,
-            edge="top",
-            size=(self.console.height - 2) // 3,
-        )
-        await self.view.dock(
-            Separator(horizontal=True),
-            edge="top",
-            size=1,
-        )
-        await self.view.dock(
-            self.echo_view,
-            edge="top",
+        self.grid.place(
+            column=self.sidebar,
+            vertical=Separator(),
+            main=self.body,
         )
 
         await self.show_list()
@@ -174,10 +191,6 @@ class InspectApp(App):
 
         self.set_interval(0.1, topic_view_callback)
 
-    async def on_resize(self, e: Resize) -> None:
-        self.sidebar.layout_size = (e.width - 2) // 3
-        self.body.layout_size = (e.height - 2) // 2
-
     async def action_forward(self) -> None:
         entity = self._history.forward()
         if entity:
@@ -188,11 +201,20 @@ class InspectApp(App):
         if entity:
             await self.show_ros_entity(entity, append_history=False)
 
-    async def action_quit(self) -> None:
-        await super().action_quit()
-
     async def action_reload(self) -> None:
         await self.show_list()
+
+    async def action_toggle_echo(self) -> None:
+        if self._mode != InspectMode.Topics or self._entity is None:
+            return
+
+        if self._topic_view:
+            await self.hide_topic_echo()
+        else:
+            await self.show_topic_echo()
+
+    async def action_quit(self) -> None:
+        await super().action_quit()
 
     async def handle_tree_click(self, message: TreeClick[RosEntity]) -> None:
         await self.show_ros_entity(message.node.data)
