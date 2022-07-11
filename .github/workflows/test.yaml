@@ -63,7 +63,7 @@ jobs:
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        run: poetry install -E ros1 --no-interaction
+        run: poetry install --no-interaction
 
       - name: Unit Test
         run: |
@@ -104,7 +104,7 @@ jobs:
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        run: poetry install -E ros2 --no-interaction
+        run: poetry install --no-interaction
 
       - name: Unit Test
         run: |
