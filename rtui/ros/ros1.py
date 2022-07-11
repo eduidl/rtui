@@ -173,7 +173,7 @@ class Ros1(RosInterface):
                 out += f" {val}"
             elif isinstance(val, str):
                 out += f' "{val}"'
-            elif isinstance(val, (list, bytes)):
+            elif isinstance(val, (list, tuple, bytes)):
                 length = len(val)
                 if length == 0:
                     out += " []"
