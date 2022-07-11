@@ -12,6 +12,7 @@ import rosservice
 from rosgraph import Master
 from typing_extensions import TypeAlias
 
+from .exception import RosMasterException
 from .ros import (
     DISPLAY_ARRAY_LENGTH_MAX,
     NodeInfo,
@@ -26,6 +27,9 @@ _RosMasterSystemState: TypeAlias = t.Tuple[
 ]
 
 
+T = t.TypeVar("T")
+
+
 class Ros1(RosInterface):
     master: Master = Master("/rtui_node")
     thread: Thread
@@ -33,14 +37,25 @@ class Ros1(RosInterface):
     def __init__(self, **_kwargs: t.Any) -> None:
         try:
             rospy.init_node("rtui_node", anonymous=True, disable_rosout=True)
-        except rospy.exceptions.ROSInitException as e:
+        except rospy.exceptions.ROSInitException:
             print("Fail to initialize ROS node. Is master running?")
-            print(f"what: {e}")
             sys.exit(1)
         self.thread = Thread(target=lambda: rospy.spin(), daemon=True)
         self.thread.start()
 
         super().__init__()
+
+    def __wrap_master_exception(self, func: t.Callable[..., T]) -> T:
+        try:
+            return func()
+        except Exception as e:
+            raise RosMasterException(e)
+
+    def __get_system_state(self) -> _RosMasterSystemState:
+        return self.__wrap_master_exception(self.master.getSystemState)
+
+    def __get_topic_type(self) -> list[tuple[str, str]]:
+        return self.__wrap_master_exception(self.master.getTopicTypes)
 
     def terminate(self) -> None:
         rospy.signal_shutdown("exit")
@@ -54,7 +69,7 @@ class Ros1(RosInterface):
         return rosservice.get_service_headers(service, uri).get("type", None)
 
     def list_nodes(self) -> list[str]:
-        state = self.master.getSystemState()
+        state = self.__get_system_state()
         nodes: list[str] = []
         for s in state:
             for _, l in s:
@@ -62,22 +77,22 @@ class Ros1(RosInterface):
         return sorted(set(nodes))
 
     def list_topics(self) -> list[str]:
-        pubs, subs, _ = self.master.getSystemState()
+        pubs, subs, _ = self.__get_system_state()
         pub_names = {pub for pub, _ in pubs}
         sub_names = {sub for sub, _ in subs}
         names = sorted(pub_names.union(sub_names))
         return names
 
     def list_services(self) -> list[str]:
-        _, _, srvs = self.master.getSystemState()
+        _, _, srvs = self.__get_system_state()
         return sorted(s for s, _ in srvs if not s.startswith("/rtui_node"))
 
     def list_actions(self) -> t.NoReturn:
         raise NotImplementedError("ROS1 does not support")
 
     def get_node_info(self, node_name: str) -> NodeInfo:
-        pubs, subs, srvs = self.master.getSystemState()
-        topic_types = self.master.getTopicTypes()
+        pubs, subs, srvs = self.__get_system_state()
+        topic_types = self.__get_topic_type()
 
         return NodeInfo(
             name=node_name,
@@ -99,8 +114,8 @@ class Ros1(RosInterface):
         )
 
     def get_topic_info(self, topic_name: str) -> TopicInfo:
-        pubs, subs, _ = self.master.getSystemState()
-        topic_types = self.master.getTopicTypes()
+        pubs, subs, _ = self.__get_system_state()
+        topic_types = self.__get_topic_type()
 
         topic_type = search_topic_type(topic_name, topic_types)
 
@@ -122,7 +137,7 @@ class Ros1(RosInterface):
         )
 
     def get_service_info(self, service_name: str) -> ServiceInfo:
-        _, _, srvs = self.master.getSystemState()
+        _, _, srvs = self.__get_system_state()
 
         service_type = self.get_service_type(service_name)
 
@@ -148,7 +163,7 @@ class Ros1(RosInterface):
     def subscribe_topic(
         self, topic_name: str, callback: t.Callable[..., None]
     ) -> t.Any:
-        topic_types = self.master.getTopicTypes()
+        topic_types = self.__get_topic_type()
 
         topic_type = search_topic_type(topic_name, topic_types)
         if topic_type is None:

@@ -4,6 +4,8 @@ import typing as t
 import warnings
 from enum import Enum, auto
 
+from rich.padding import Padding
+from rich.text import Text
 from textual.app import App
 from textual.driver import Driver
 from textual.events import Mount
@@ -11,6 +13,7 @@ from textual.widgets import Footer, ScrollView, TreeClick, TreeControl
 
 from ..event import RosEntityLinkClick
 from ..ros import RosEntity, RosEntityType, RosInterface
+from ..ros.exception import RosMasterException
 from ..utility import History
 from ..widgets import ActionView, NodeView, Separator, ServiceView, TopicEcho, TopicView
 
@@ -80,23 +83,34 @@ class InspectApp(App):
             await self.show_list()
 
     async def show_list(self) -> None:
-        if self._mode == InspectMode.Nodes:
-            tree = TreeControl("Nodes", RosEntity.new_dummy("/"))
-            for name in self._ros.list_nodes():
-                await tree.add(tree.root.id, name, RosEntity.new_node(name))
-        elif self._mode == InspectMode.Topics:
-            tree = TreeControl("Topics", RosEntity.new_dummy("/"))
-            for name in self._ros.list_topics():
-                await tree.add(tree.root.id, name, RosEntity.new_topic(name))
-        elif self._mode == InspectMode.Services:
-            tree = TreeControl("Services", RosEntity.new_dummy("/"))
-            for name in self._ros.list_services():
-                await tree.add(tree.root.id, name, RosEntity.new_service(name))
-        elif self._mode == InspectMode.Actions:
-            tree = TreeControl("Actions", RosEntity.new_dummy("/"))
-            for name in self._ros.list_actions():
-                await tree.add(tree.root.id, name, RosEntity.new_action(name))
-        else:
+        try:
+            if self._mode == InspectMode.Nodes:
+                tree = TreeControl("Nodes", RosEntity.new_dummy("/"))
+                for name in self._ros.list_nodes():
+                    await tree.add(tree.root.id, name, RosEntity.new_node(name))
+            elif self._mode == InspectMode.Topics:
+                tree = TreeControl("Topics", RosEntity.new_dummy("/"))
+                for name in self._ros.list_topics():
+                    await tree.add(tree.root.id, name, RosEntity.new_topic(name))
+            elif self._mode == InspectMode.Services:
+                tree = TreeControl("Services", RosEntity.new_dummy("/"))
+                for name in self._ros.list_services():
+                    await tree.add(tree.root.id, name, RosEntity.new_service(name))
+            elif self._mode == InspectMode.Actions:
+                tree = TreeControl("Actions", RosEntity.new_dummy("/"))
+                for name in self._ros.list_actions():
+                    await tree.add(tree.root.id, name, RosEntity.new_action(name))
+            else:
+                return
+        except RosMasterException as e:
+            await self.sidebar.update(
+                Padding(
+                    Text.assemble(
+                        Text("Fail to communicate", style="red bold"), f"\n{e}"
+                    ),
+                    (1, 1),
+                )
+            )
             return
 
         await tree.root.expand()

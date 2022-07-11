@@ -1,3 +1,4 @@
+from . import exception
 from .ros import (
     ActionInfo,
     NodeInfo,
@@ -13,6 +14,7 @@ from .ros import (
 )
 
 __all__ = [
+    "exception",
     "ActionInfo",
     "NodeInfo",
     "RosEntity",

@@ -10,6 +10,7 @@ from textual.widget import Widget
 
 from ..event import RosEntityLinkClick
 from ..ros import NodeInfo, RosEntity, RosInterface
+from ..ros.exception import RosMasterException
 
 
 def text_from_node_info(info: NodeInfo, hover_entity: tuple[str, str]) -> Text:
@@ -67,8 +68,13 @@ class NodeView(Widget):
         self.padding = Spacing.unpack(padding)
 
     def render(self) -> RenderableType:
-        info = self.ros.get_node_info(self.node_name)
-        return text_from_node_info(info, self.hover_entity)
+        try:
+            info = self.ros.get_node_info(self.node_name)
+            return text_from_node_info(info, self.hover_entity)
+        except RosMasterException as e:
+            return Text.assemble(
+                Text("Fail to communicate", style="red bold"), f"\n{e}"
+            )
 
     async def on_mouse_move(self, event: MouseMove) -> None:
         self.hover_entity = event.style.meta.get("hover_entity", ("", ""))

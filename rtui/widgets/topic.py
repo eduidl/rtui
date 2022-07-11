@@ -16,6 +16,7 @@ from textual.widget import Widget
 
 from ..event import RosEntityLinkClick
 from ..ros import RosEntity, RosInterface, TopicInfo
+from ..ros.exception import RosMasterException
 
 
 def text_from_topic_info(info: TopicInfo, hover_node: str) -> Text:
@@ -66,8 +67,13 @@ class TopicView(Widget):
         self.padding = Spacing.unpack(padding)
 
     def render(self) -> RenderableType:
-        info = self.ros.get_topic_info(self.topic_name)
-        return text_from_topic_info(info, self.hover_node)
+        try:
+            info = self.ros.get_topic_info(self.topic_name)
+            return text_from_topic_info(info, self.hover_node)
+        except RosMasterException as e:
+            return Text.assemble(
+                Text("Fail to communicate", style="red bold"), f"\n{e}"
+            )
 
     async def on_mouse_move(self, event: MouseMove) -> None:
         self.hover_node = event.style.meta.get("hover_node", "")
