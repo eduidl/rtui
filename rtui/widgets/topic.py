@@ -43,7 +43,7 @@ def text_from_topic_info(info: TopicInfo, hover_node: str) -> Text:
         Text("Type:", style="bold"),
         f" {', '.join(info.types) or '<unknown type>'}",
         *common("Publishers", info.publishers),
-        *common("Subscriberes", info.subscribers),
+        *common("Subscribers", info.subscribers),
         style="white",
         no_wrap=True,
         justify="left",
