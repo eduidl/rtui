@@ -153,11 +153,11 @@ class InspectApp(App):
         await self.body.update(ActionView(self._ros, action_name))
 
     async def on_load(self) -> None:
-        await self.bind("b", "back", "Prev Page")
-        await self.bind("f", "forward", "Next Page")
-        await self.bind("r", "reload", "Reload")
-        await self.bind("e", "toggle_echo", "Toggle Echo")
-        await self.bind("q", "quit", "Quit")
+        await self.bind("b", "back", "Prev Page", key_display="b")
+        await self.bind("f", "forward", "Next Page", key_display="f")
+        await self.bind("r", "reload", "Reload", key_display="r")
+        await self.bind("e", "toggle_echo", "Toggle Echo", key_display="e")
+        await self.bind("q", "quit", "Quit", key_display="q")
 
     async def on_mount(self, _event: Mount) -> None:
         await self.view.dock(Footer(), edge="bottom")
