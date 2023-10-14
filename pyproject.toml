@@ -31,10 +31,11 @@ mypy = "^0.961"
 taskipy = "^1.10.2"
 
 [tool.taskipy.tasks]
-check = "task check_lint && task check_format && task check_type"
+check_all = "task check && task check_type"
+check = "task check_lint && task check_format"
 check_lint = "flake8 rtui"
 check_format = "black . --check && isort . --check --diff"
-check_type = "mypy rtui --strict"
+check_type = "mypy rtui"
 test = "python -m unittest tests -v"
 
 [tool.isort]

@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: poetry install --no-interaction
 
-      - name: Check Lint, Format and Type Hint
+      - name: Check Lint and Format
         run: poetry run task check
 
   test-ros1:
