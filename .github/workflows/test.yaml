@@ -10,16 +10,14 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache Packages
-        uses: actions/cache@v3
+      - uses: actions/setup-python@v4
         with:
-          path: ~/.local
-          key: check-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
+          python-version: "3.10"
 
       - name: Install Poetry
         run: |
@@ -49,12 +47,6 @@ jobs:
           sudo apt install -yqq \
             ros-noetic-ros-base \
             ros-noetic-rospy
-
-      - name: Cache Packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: test-ros1-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
@@ -99,12 +91,6 @@ jobs:
           sudo apt install -yqq \
             ros-${{ matrix.ros.distro }}-ros-base \
             ros-${{ matrix.ros.distro }}-rclpy
-
-      - name: Cache Packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: test-ros2-${{ matrix.ros.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
