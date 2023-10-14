@@ -15,12 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache Packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: check-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
-
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
@@ -49,12 +43,6 @@ jobs:
           sudo apt install -yqq \
             ros-noetic-ros-base \
             ros-noetic-rospy
-
-      - name: Cache Packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: test-ros1-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
@@ -99,12 +87,6 @@ jobs:
           sudo apt install -yqq \
             ros-${{ matrix.ros.distro }}-ros-base \
             ros-${{ matrix.ros.distro }}-rclpy
-
-      - name: Cache Packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: test-ros2-${{ matrix.ros.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
