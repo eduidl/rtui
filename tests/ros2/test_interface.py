@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import subprocess as sp
 import typing as t
 import unittest
 import warnings
 
 from rtui.ros import init_ros, is_ros2
+
+from .node.dummy_node1 import DummyNode1
+from .node.dummy_node2 import DummyNode2
 
 TestCase: t.Type = unittest.TestCase if is_ros2() else object
 
@@ -20,25 +22,20 @@ def ignore_warnings(test_func):
 
 
 class TestRos2Interface(TestCase):
-    NODE1: t.ClassVar[sp.Popen | None] = None
-    NODE2: t.ClassVar[sp.Popen | None] = None
+    NODE1: t.ClassVar[DummyNode1 | None] = None
+    NODE2: t.ClassVar[DummyNode2 | None] = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.NODE1 = sp.Popen("python3 tests/ros2/node/dummy_node1.py".split())
-        cls.NODE2 = sp.Popen("python3 tests/ros2/node/dummy_node2.py".split())
         cls.ROS = init_ros()
+        cls.NODE1 = DummyNode1()
+        cls.NODE2 = DummyNode2()
 
         rate = cls.ROS.node.create_rate(3)
         rate.sleep()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.NODE1:
-            cls.NODE1.kill()
-        if cls.NODE2:
-            cls.NODE2.kill()
-
         cls.ROS.terminate()
 
     def test_list_nodes(self):
