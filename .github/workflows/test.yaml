@@ -107,4 +107,4 @@ jobs:
       - name: Unit Test
         run: |
           source /opt/ros/${{ matrix.ros.distro }}/setup.bash
-          poetry run task check
+          poetry run task test
