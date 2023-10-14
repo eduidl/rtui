@@ -77,10 +77,9 @@ jobs:
 
       matrix:
         ros:
-          - { distro: foxy, os: ubuntu-20.04 }
-          - { distro: galactic, os: ubuntu-20.04 }
           - { distro: humble, os: ubuntu-22.04 }
-          - { distro: rolling, os: ubuntu-20.04 }
+          - { distro: iron, os: ubuntu-22.04 }
+          - { distro: rolling, os: ubuntu-22.04 }
 
     runs-on: ${{ matrix.ros.os }}
 
