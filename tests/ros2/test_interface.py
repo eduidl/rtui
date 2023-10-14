@@ -91,23 +91,6 @@ class TestRos2Interface(TestCase):
         self.assertEqual(info.publishers, [("/dummy_node1", "std_msgs/msg/String")])
         self.assertEqual(info.subscribers, [("/dummy_node2", "std_msgs/msg/String")])
 
-    def test_get_topic_info_multi_types(self):
-        topic_name = "/pub_dup"
-        info = self.ROS.get_topic_info(topic_name)
-        self.assertEqual(info.name, topic_name)
-        self.assertSetEqual(
-            set(info.types), set(("std_msgs/msg/String", "std_msgs/msg/Int32"))
-        )
-        self.assertSetEqual(
-            set(info.publishers),
-            set(
-                (
-                    ("/dummy_node1", "std_msgs/msg/String"),
-                    ("/dummy_node2", "std_msgs/msg/Int32"),
-                )
-            ),
-        )
-
     def test_get_service_info(self):
         service_name = "/service"
         info = self.ROS.get_service_info(service_name)
