@@ -32,10 +32,10 @@ taskipy = "^1.10.2"
 
 [tool.taskipy.tasks]
 check = "task check_lint && task check_format && task check_type"
-check_lint = "flake8 ."
+check_lint = "flake8 rtui"
 check_format = "black . --check && isort . --check --diff"
 check_type = "mypy rtui --strict"
-test = "python -m unittest discover tests -v"
+test = "python -m unittest tests -v"
 
 [tool.isort]
 profile = "black"

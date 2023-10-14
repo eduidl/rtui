@@ -4,12 +4,10 @@ import typing as t
 import unittest
 import warnings
 
-from rtui.ros import init_ros, is_ros2
+from rtui.ros import init_ros
 
 from .node.dummy_node1 import DummyNode1
 from .node.dummy_node2 import DummyNode2
-
-TestCase: t.Type = unittest.TestCase if is_ros2() else object
 
 
 def ignore_warnings(test_func):
@@ -21,7 +19,7 @@ def ignore_warnings(test_func):
     return do_test
 
 
-class TestRos2Interface(TestCase):
+class TestRos2Interface(unittest.TestCase):
     NODE1: t.ClassVar[DummyNode1 | None] = None
     NODE2: t.ClassVar[DummyNode2 | None] = None
 

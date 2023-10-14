@@ -5,14 +5,9 @@ import typing as t
 import unittest
 import warnings
 
-try:
-    import rospy
-except ImportError:
-    pass
+import rospy
 
-from rtui.ros import init_ros, is_ros1
-
-TestCase: t.Type = unittest.TestCase if is_ros1() else object
+from rtui.ros import init_ros
 
 
 def ignore_warnings(test_func):
@@ -24,7 +19,7 @@ def ignore_warnings(test_func):
     return do_test
 
 
-class TestRos1Interface(TestCase):
+class TestRos1Interface(unittest.TestCase):
     NODE1: t.ClassVar[sp.Popen | None] = None
     NODE2: t.ClassVar[sp.Popen | None] = None
 
