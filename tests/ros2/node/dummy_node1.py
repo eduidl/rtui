@@ -15,7 +15,6 @@ class DummyNode1(Node):
     def __init__(self):
         super().__init__(
             "dummy_node1",
-            enable_rosout=False,
             start_parameter_services=False,
             parameter_overrides=[],
         )
