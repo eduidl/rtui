@@ -12,7 +12,7 @@ def inspect_common(mode: InspectMode) -> None:
         ros.terminate()
 
 
-@click.command(help="Inspect ROS nodes")
+@click.command(help="Inspect ROS nodes (default)")
 def nodes() -> None:
     inspect_common(InspectMode.Nodes)
 
@@ -35,9 +35,11 @@ def actions() -> None:
     inspect_common(InspectMode.Actions)
 
 
-@click.group(help="Terminal User Interface for ROS User")
-def cli() -> None:
-    pass
+@click.group(help="Terminal User Interface for ROS User", invoke_without_command=True)
+@click.pass_context
+def cli(ctx: click.Context) -> None:
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(nodes)
 
 
 def main() -> None:
