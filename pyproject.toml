@@ -24,12 +24,12 @@ rospkg = "^1.4.0"
 numpy = "^1.23.0"
 
 [tool.poetry.dev-dependencies]
-black = "^22.3.0"
-flake8 = "^5"
+black = "^23"
+flake8 = { version = "^6", python = "^3.10" }
 flake8-pyproject = "^1"
-isort = "^5.10.1"
-mypy = "^0.961"
-taskipy = "^1.10.2"
+isort = "^5"
+mypy = "^1"
+taskipy = "^1"
 
 [tool.taskipy.tasks]
 check_all = "task check && task check_type"
