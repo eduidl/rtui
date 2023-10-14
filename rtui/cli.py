@@ -1,7 +1,7 @@
 import click
 
 from .app import InspectApp, InspectMode
-from .ros import init_ros, is_ros1
+from .ros import init_ros, is_ros2
 
 
 def inspect_common(mode: InspectMode) -> None:
@@ -27,11 +27,8 @@ def services() -> None:
     inspect_common(InspectMode.Services)
 
 
-@click.command(help="Inspect ROS actions (ROS1 is not supported)")
+@click.command(help="Inspect ROS actions")
 def actions() -> None:
-    if is_ros1():
-        print("actions command does not support ROS1")
-        return
     inspect_common(InspectMode.Actions)
 
 
@@ -46,7 +43,8 @@ def main() -> None:
     cli.add_command(nodes)
     cli.add_command(topics)
     cli.add_command(services)
-    cli.add_command(actions)
+    if is_ros2():
+        cli.add_command(actions)
     cli()
     ...
 
