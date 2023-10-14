@@ -43,7 +43,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  actions   Inspect ROS actions (ROS1 is not supported)
+  actions   Inspect ROS actions
   nodes     Inspect ROS nodes
   services  Inspect ROS services
   topics    Inspect ROS topics
