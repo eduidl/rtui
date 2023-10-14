@@ -25,7 +25,8 @@ numpy = "^1.23.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
-flake8 = "^4.0.1"
+flake8 = "^5"
+flake8-pyproject = "^1"
 isort = "^5.10.1"
 mypy = "^0.961"
 taskipy = "^1.10.2"
@@ -40,6 +41,11 @@ test = "python -m unittest tests -v"
 
 [tool.isort]
 profile = "black"
+
+[tool.flake8]
+exclude = ".git,.venv,__pycache__,tests/__init__.py"
+ignore = "E501"
+max_complexity = 15
 
 [tool.mypy]
 mypy_path = "typings"
