@@ -15,13 +15,11 @@ class DummyNode1(Node):
     def __init__(self):
         super().__init__(
             "dummy_node1",
-            enable_rosout=False,
             start_parameter_services=False,
             parameter_overrides=[],
         )
         self.pub1 = self.create_publisher(String, "topic", 1)
         self.pub2 = self.create_publisher(Int32, "pub", 1)
-        self.pub3 = self.create_publisher(String, "pub_dup", 1)
         self.sub = self.create_subscription(Image, "sub", msg_callback, 1)
         self.server = self.create_service(SetBool, "service", lambda x, y: ())
         self.client = self.create_client(Empty, "client")

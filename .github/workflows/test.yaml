@@ -2,64 +2,63 @@ name: Test
 
 on:
   push:
-    branches: "*"
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
 
 jobs:
   check:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Cache Packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.local
           key: check-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+          curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
         run: poetry install --no-interaction
 
-      - name: Check Lint, Format and Type Hint
+      - name: Check Lint and Format
         run: poetry run task check
 
   test-ros1:
-    strategy:
-      fail-fast: false
-
-      matrix:
-        ros:
-          - { distro: melodic, os: ubuntu-18.04 }
-          - { distro: noetic, os: ubuntu-20.04 }
-
-    runs-on: ${{ matrix.ros.os }}
+    runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup ROS environment
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: ${{ matrix.ros.distro }}
+        run: |
+          sudo apt update -q
+          sudo apt install -yqq curl gnupg2
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
+          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+          echo "deb http://packages.ros.org/ros/ubuntu focal main" | sudo tee /etc/apt/sources.list.d/ros-latest.list > /dev/null
+          sudo apt update -q
+          sudo apt install -yqq \
+            ros-noetic-ros-base \
+            ros-noetic-rospy
 
       - name: Cache Packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.local
           key: test-ros1-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+          curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
@@ -67,7 +66,7 @@ jobs:
 
       - name: Unit Test
         run: |
-          source /opt/ros/${{ matrix.ros.distro }}/setup.bash
+          source /opt/ros/noetic/setup.bash
           roscore &
           poetry run task test
 
@@ -77,30 +76,39 @@ jobs:
 
       matrix:
         ros:
-          - { distro: foxy, os: ubuntu-20.04 }
-          - { distro: galactic, os: ubuntu-20.04 }
           - { distro: humble, os: ubuntu-22.04 }
-          - { distro: rolling, os: ubuntu-20.04 }
+          - { distro: iron, os: ubuntu-22.04 }
+          - { distro: rolling, os: ubuntu-22.04 }
 
     runs-on: ${{ matrix.ros.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup ROS environment
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: ${{ matrix.ros.distro }}
+        run: |
+          sudo apt update -q
+          sudo apt install -yqq curl
+
+          keyring=/usr/share/keyrings/ros-archive-keyring.gpg
+          codename=$(. /etc/os-release && echo $UBUNTU_CODENAME)
+          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o ${keyring}
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=${keyring}] http://packages.ros.org/ros2/ubuntu ${codename} main" |
+            sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+          sudo apt update -q
+          sudo apt install -yqq \
+            ros-${{ matrix.ros.distro }}-ros-base \
+            ros-${{ matrix.ros.distro }}-rclpy
 
       - name: Cache Packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.local
           key: test-ros2-${{ matrix.ros.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Install Poetry
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+          curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.poetry/bin" >> $GITHUB_PATH
 
       - name: Install Dependencies
@@ -109,4 +117,4 @@ jobs:
       - name: Unit Test
         run: |
           source /opt/ros/${{ matrix.ros.distro }}/setup.bash
-          poetry run task check
+          poetry run task test

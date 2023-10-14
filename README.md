@@ -8,10 +8,10 @@ rtui is ROS Terminal User Interface
   - 3.8+
   - Latest Poetry does not support Python 3.6
 - ROS1
-  - melodic (Need to use python3.8)
   - noetic
 - ROS2
-  - foxy+
+  - humble
+  - ironic
 
 ## Install
 
@@ -19,18 +19,12 @@ Via [pipx](https://github.com/pypa/pipx) (Recommended)
 
 ```sh-session
 $ pipx install git+https://github.com/eduidl/rtui.git
-
-# melodic
-$ pipx install --python python3.8 git+https://github.com/eduidl/rtui.git
 ```
 
 Pip
 
 ```sh-session
 $ pip3 install --user git+https://github.com/eduidl/rtui.git
-
-# melodic
-$ python3.8 -m pip install --user git+https://github.com/eduidl/rtui.git
 ```
 
 ## Demo

@@ -1,15 +1,12 @@
-import typing as t
 import unittest
 
 from geometry_msgs.msg import AccelWithCovariance
 from std_msgs.msg import Header, UInt8MultiArray
 
-from rtui.ros import get_ros_cls, is_ros1
-
-TestCase: t.Type = unittest.TestCase if is_ros1() else object
+from rtui.ros import get_ros_cls
 
 
-class TestRos1Format(TestCase):
+class TestRos1Format(unittest.TestCase):
     ROS = get_ros_cls()
 
     def test_format_header(self):

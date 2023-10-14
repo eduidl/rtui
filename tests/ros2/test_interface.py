@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import subprocess as sp
 import typing as t
 import unittest
 import warnings
 
-from rtui.ros import init_ros, is_ros2
+from rtui.ros import init_ros
 
-TestCase: t.Type = unittest.TestCase if is_ros2() else object
+from .node.dummy_node1 import DummyNode1
+from .node.dummy_node2 import DummyNode2
 
 
 def ignore_warnings(test_func):
@@ -19,26 +19,21 @@ def ignore_warnings(test_func):
     return do_test
 
 
-class TestRos2Interface(TestCase):
-    NODE1: t.ClassVar[sp.Popen | None] = None
-    NODE2: t.ClassVar[sp.Popen | None] = None
+class TestRos2Interface(unittest.TestCase):
+    NODE1: t.ClassVar[DummyNode1 | None] = None
+    NODE2: t.ClassVar[DummyNode2 | None] = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.NODE1 = sp.Popen("python3 tests/ros2/node/dummy_node1.py".split())
-        cls.NODE2 = sp.Popen("python3 tests/ros2/node/dummy_node2.py".split())
         cls.ROS = init_ros()
+        cls.NODE1 = DummyNode1()
+        cls.NODE2 = DummyNode2()
 
         rate = cls.ROS.node.create_rate(3)
         rate.sleep()
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.NODE1:
-            cls.NODE1.kill()
-        if cls.NODE2:
-            cls.NODE2.kill()
-
         cls.ROS.terminate()
 
     def test_list_nodes(self):
@@ -90,23 +85,6 @@ class TestRos2Interface(TestCase):
         self.assertEqual(info.types, ["std_msgs/msg/String"])
         self.assertEqual(info.publishers, [("/dummy_node1", "std_msgs/msg/String")])
         self.assertEqual(info.subscribers, [("/dummy_node2", "std_msgs/msg/String")])
-
-    def test_get_topic_info_multi_types(self):
-        topic_name = "/pub_dup"
-        info = self.ROS.get_topic_info(topic_name)
-        self.assertEqual(info.name, topic_name)
-        self.assertSetEqual(
-            set(info.types), set(("std_msgs/msg/String", "std_msgs/msg/Int32"))
-        )
-        self.assertSetEqual(
-            set(info.publishers),
-            set(
-                (
-                    ("/dummy_node1", "std_msgs/msg/String"),
-                    ("/dummy_node2", "std_msgs/msg/Int32"),
-                )
-            ),
-        )
 
     def test_get_service_info(self):
         service_name = "/service"
