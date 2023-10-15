@@ -5,10 +5,15 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from os import environ
 
-from .entity import ActionInfo, NodeInfo, ServiceInfo, TopicInfo
-
-SEPARATOR = "/"
-UNKNOWN_TYPE = "<unknown type>"
+from .entity import (
+    ActionInfo,
+    NodeInfo,
+    RosEntity,
+    RosEntityInfo,
+    RosEntityType,
+    ServiceInfo,
+    TopicInfo,
+)
 
 
 class RosInterface(ABC):
@@ -35,6 +40,18 @@ class RosInterface(ABC):
     @abstractmethod
     def list_actions(self) -> list[str]:
         ...
+
+    def get_entity_info(self, entity: RosEntity) -> RosEntityInfo:
+        if entity.type == RosEntityType.Node:
+            return self.get_node_info(entity.name)
+        elif entity.type == RosEntityType.Topic:
+            return self.get_topic_info(entity.name)
+        elif entity.type == RosEntityType.Service:
+            return self.get_service_info(entity.name)
+        elif entity.type == RosEntityType.Action:
+            return self.get_action_info(entity.name)
+        else:
+            raise ValueError(f"unknown entity type: {entity.type}")
 
     @abstractmethod
     def get_node_info(self, node_name: str) -> NodeInfo:
