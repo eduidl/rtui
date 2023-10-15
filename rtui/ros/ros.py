@@ -25,6 +25,18 @@ class RosInterface(ABC):
     def now(self) -> datetime:
         ...
 
+    def list_entities(self, entity_type: RosEntityType) -> list[str]:
+        if entity_type == RosEntityType.Node:
+            return self.list_nodes()
+        elif entity_type == RosEntityType.Topic:
+            return self.list_topics()
+        elif entity_type == RosEntityType.Service:
+            return self.list_services()
+        elif entity_type == RosEntityType.Action:
+            return self.list_actions()
+        else:
+            raise ValueError(f"unknown entity type: {entity_type}")
+
     @abstractmethod
     def list_nodes(self) -> list[str]:
         ...
