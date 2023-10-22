@@ -10,7 +10,7 @@ from ..ros import RosEntityType, RosInterface
 class RosEntityListPanel(Static):
     _ros: RosInterface
     _entity_type: RosEntityType
-    _tree: Tree[None]
+    _tree: Tree[str]
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class RosEntityListPanel(Static):
         self._tree.auto_expand = True
         self.update_items()
 
-    def update_items(self):
+    def update_items(self) -> None:
         self._tree.clear()
         for entity in self._ros.list_entities(self._entity_type):
             self._tree.root.add_leaf(entity, entity)
@@ -44,6 +44,6 @@ class RosEntityListPanel(Static):
         yield self._tree
 
     def on_tree_node_selected(self, e: Tree.NodeSelected[str]) -> None:
-        if e.node.is_root:
+        if e.node.is_root or e.node.data is None:
             return
         self.post_message(RosEntitySelected(self._entity_type, e.node.data))

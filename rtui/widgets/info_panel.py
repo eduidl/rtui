@@ -52,7 +52,7 @@ class RosEntityInfoPanel(Static):
             self._entity = entity
             self.update_info()
 
-    def update_info(self):
+    def update_info(self) -> None:
         if self._entity is None:
             self.update("")
             return
