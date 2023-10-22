@@ -179,10 +179,6 @@ class InspectApp(App):
     async def action_reload(self) -> None:
         await self.show_list()
 
-    async def action_toggle_echo(self) -> None:
-        if self._mode != InspectMode.Topics or self._entity is None:
-            return
-
     async def action_quit(self) -> None:
         await super().action_quit()
 
