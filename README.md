@@ -43,7 +43,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  actions   Inspect ROS actions
+  actions   Inspect ROS actions 
   nodes     Inspect ROS nodes
   services  Inspect ROS services
   topics    Inspect ROS topics
@@ -57,5 +57,4 @@ Commands:
   - keyboard operation
     - `b/f`: Trace history backward and forward
     - `r`: Once more get list of nodes, topics or etc.
-    - `e`: Start or finish topic subscriptions
     - `q`: Terminate app

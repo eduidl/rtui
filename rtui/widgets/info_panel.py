@@ -15,6 +15,8 @@ class RosEntityInfoPanel(Static):
     DEFAULT_CSS = """
     RosEntityInfoPanel {
         padding: 1;
+        background: $panel;
+        height: 100%;
     }
     """
 
