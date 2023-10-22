@@ -37,6 +37,7 @@ check = "task check_lint && task check_format"
 check_lint = "flake8 rtui"
 check_format = "black . --check && isort . --check --diff"
 check_type = "mypy rtui"
+format = "black . && isort ."
 test = "python -m unittest tests -v"
 
 [tool.isort]
