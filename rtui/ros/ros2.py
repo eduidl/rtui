@@ -119,7 +119,7 @@ class Ros2(RosInterface):
         def flatten(topics: t.Any) -> t.Generator[tuple[str, str], None, None]:
             for topic in topics:
                 if not topic.types:
-                    yield topic.name, "<unknown type>"
+                    yield topic.name, None
                 for type_ in topic.types:
                     yield topic.name, type_
 
@@ -196,7 +196,7 @@ class Ros2(RosInterface):
         ) -> t.Generator[tuple[str, str], None, None]:
             for name, types in name_types:
                 if not types:
-                    yield name, "<unknown type>"
+                    yield name, None
                 else:
                     for type_ in types:
                         yield name, type_
