@@ -12,7 +12,6 @@ UNKNOWN_TYPE = "<unknown type>"
 
 
 class RosEntityType(IntEnum):
-    Dummy = auto()
     Node = auto()
     Topic = auto()
     Service = auto()
@@ -23,10 +22,6 @@ class RosEntityType(IntEnum):
 class RosEntity:
     name: str
     type: RosEntityType
-
-    @classmethod
-    def new_dummy(cls, name: str) -> "RosEntity":
-        return cls(name, RosEntityType.Dummy)
 
     @classmethod
     def new_node(cls, path: str) -> "RosEntity":
