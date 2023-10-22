@@ -1,10 +1,10 @@
 import click
 
-from .app import InspectApp, InspectMode
-from .ros import init_ros, is_ros2
+from .app import InspectApp
+from .ros import RosEntityType, init_ros, is_ros2
 
 
-def inspect_common(mode: InspectMode) -> None:
+def inspect_common(mode: RosEntityType) -> None:
     ros = init_ros()
     try:
         InspectApp.run(ros=ros, init_mode=mode, title="ROS Inspect")
@@ -14,22 +14,22 @@ def inspect_common(mode: InspectMode) -> None:
 
 @click.command(help="Inspect ROS nodes (default)")
 def nodes() -> None:
-    inspect_common(InspectMode.Nodes)
+    inspect_common(RosEntityType.Node)
 
 
 @click.command(help="Inspect ROS topics")
 def topics() -> None:
-    inspect_common(InspectMode.Topics)
+    inspect_common(RosEntityType.Topic)
 
 
 @click.command(help="Inspect ROS services")
 def services() -> None:
-    inspect_common(InspectMode.Services)
+    inspect_common(RosEntityType.Service)
 
 
 @click.command(help="Inspect ROS actions")
 def actions() -> None:
-    inspect_common(InspectMode.Actions)
+    inspect_common(RosEntityType.Action)
 
 
 @click.group(help="Terminal User Interface for ROS User", invoke_without_command=True)
