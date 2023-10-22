@@ -58,7 +58,9 @@ class RosEntityInfoPanel(Static):
         try:
             info = self._ros.get_entity_info(self._entity).to_textual()
         except RosMasterException as e:
-            info = f"[b][red]Fail to communicate[/][/]\n{e}"
+            info = f"[b][red]Fail to communicate to master[/][/]\n{e}"
+        except Exception as e:
+            info = f"[b][red]Fail to get information of {self._entity.name}[/][/]\n{e}"
 
         self.update(info)
 
