@@ -69,6 +69,10 @@ class Ros2(RosInterface):
     def now(self) -> datetime:
         return datetime.fromtimestamp(self.node.get_clock().now().nanoseconds * 1e-9)
 
+    @classmethod
+    def is_ros2(_cls) -> bool:
+        return True
+
     def list_nodes(self) -> list[str]:
         nodes = ros2node.api.get_node_names(node=self.node)
         return sorted({node.full_name for node in nodes})

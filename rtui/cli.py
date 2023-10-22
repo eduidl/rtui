@@ -4,10 +4,11 @@ from .app import InspectApp
 from .ros import RosEntityType, init_ros, is_ros2
 
 
-def inspect_common(mode: RosEntityType) -> None:
+def inspect_common(target: RosEntityType) -> None:
     ros = init_ros()
     try:
-        InspectApp.run(ros=ros, init_mode=mode, title="ROS Inspect")
+        app = InspectApp(ros=ros, init_target=target)
+        app.run()
     finally:
         ros.terminate()
 

@@ -25,6 +25,14 @@ class RosInterface(ABC):
     def now(self) -> datetime:
         ...
 
+    @classmethod
+    def is_ros1(cls) -> bool:
+        return False
+
+    @classmethod
+    def is_ros2(cls) -> bool:
+        return False
+
     def list_entities(self, entity_type: RosEntityType) -> list[str]:
         if entity_type == RosEntityType.Node:
             return self.list_nodes()

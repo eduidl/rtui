@@ -57,6 +57,10 @@ class Ros1(RosInterface):
     def now(self) -> datetime:
         return datetime.fromtimestamp(rospy.Time.now().to_sec())
 
+    @classmethod
+    def is_ros1(_cls) -> bool:
+        return True
+
     def get_service_type(self, service: str) -> str | None:
         uri = self.master.lookupService(service)
         return rosservice.get_service_headers(service, uri).get("type", None)
