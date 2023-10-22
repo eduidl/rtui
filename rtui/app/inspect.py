@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import typing as t
 import warnings
-from enum import Enum, auto
 
 from rich.padding import Padding
 from rich.text import Text
@@ -20,23 +19,16 @@ from ..widgets import ActionView, NodeView, Separator, ServiceView, TopicView
 warnings.simplefilter("ignore", ResourceWarning)
 
 
-class InspectMode(Enum):
-    Nodes = auto()
-    Topics = auto()
-    Services = auto()
-    Actions = auto()
-
-
 class InspectApp(App):
     _ros: RosInterface
-    _mode: InspectMode = InspectMode.Nodes
+    _mode: RosEntityType = RosEntityType.Node
     _entity: RosEntity | None = None
     _history: History[RosEntity] = History(20)
 
     def __init__(
         self,
         ros: RosInterface,
-        init_mode: InspectMode,
+        init_mode: RosEntityType,
         screen: bool = True,
         driver_class: t.Type[Driver] | None = None,
         log: str = "",
@@ -60,17 +52,14 @@ class InspectApp(App):
         prev_mode = self._mode
 
         self._entity = entity
+        self._mode = self._entity.type
         if entity.type == RosEntityType.Node:
-            self._mode = InspectMode.Nodes
             await self.show_node(entity.name)
         elif entity.type == RosEntityType.Topic:
-            self._mode = InspectMode.Topics
             await self.show_topic(entity.name)
         elif entity.type == RosEntityType.Service:
-            self._mode = InspectMode.Services
             await self.show_service(entity.name)
         elif entity.type == RosEntityType.Action:
-            self._mode = InspectMode.Actions
             await self.show_action(entity.name)
 
         if append_history:
@@ -81,19 +70,19 @@ class InspectApp(App):
 
     async def show_list(self) -> None:
         try:
-            if self._mode == InspectMode.Nodes:
+            if self._mode == RosEntityType.Node:
                 tree = TreeControl("Nodes", RosEntity.new_dummy("/"))
                 for name in self._ros.list_nodes():
                     await tree.add(tree.root.id, name, RosEntity.new_node(name))
-            elif self._mode == InspectMode.Topics:
+            elif self._mode == RosEntityType.Topic:
                 tree = TreeControl("Topics", RosEntity.new_dummy("/"))
                 for name in self._ros.list_topics():
                     await tree.add(tree.root.id, name, RosEntity.new_topic(name))
-            elif self._mode == InspectMode.Services:
+            elif self._mode == RosEntityType.Service:
                 tree = TreeControl("Services", RosEntity.new_dummy("/"))
                 for name in self._ros.list_services():
                     await tree.add(tree.root.id, name, RosEntity.new_service(name))
-            elif self._mode == InspectMode.Actions:
+            elif self._mode == RosEntityType.Action:
                 tree = TreeControl("Actions", RosEntity.new_dummy("/"))
                 for name in self._ros.list_actions():
                     await tree.add(tree.root.id, name, RosEntity.new_action(name))
