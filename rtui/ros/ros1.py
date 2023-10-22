@@ -12,12 +12,7 @@ from rosgraph import Master
 from typing_extensions import TypeAlias
 
 from .exception import RosMasterException
-from .ros import (
-    NodeInfo,
-    RosInterface,
-    ServiceInfo,
-    TopicInfo,
-)
+from .ros import NodeInfo, RosInterface, ServiceInfo, TopicInfo
 
 _RosMasterEachSystemState: TypeAlias = t.List[t.Tuple[str, t.List[str]]]
 _RosMasterSystemState: TypeAlias = t.Tuple[

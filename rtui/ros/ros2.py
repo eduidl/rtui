@@ -18,13 +18,7 @@ from rclpy.action import (
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 
-from .ros import (
-    ActionInfo,
-    NodeInfo,
-    RosInterface,
-    ServiceInfo,
-    TopicInfo,
-)
+from .ros import ActionInfo, NodeInfo, RosInterface, ServiceInfo, TopicInfo
 
 
 def split_full_path(path: str) -> tuple[str, str]:
