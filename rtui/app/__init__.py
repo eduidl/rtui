@@ -1,3 +1,6 @@
-from .inspect import InspectApp, InspectMode
+from .inspect import InspectApp, InspectTarget
 
-__all__ = ["InspectApp", "InspectMode"]
+__all__ = [
+    "InspectApp",
+    "InspectTarget",
+]

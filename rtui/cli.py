@@ -1,35 +1,36 @@
 import click
 
-from .app import InspectApp, InspectMode
+from .app import InspectApp, InspectTarget
 from .ros import init_ros, is_ros2
 
 
-def inspect_common(mode: InspectMode) -> None:
+def inspect_common(target: InspectTarget) -> None:
     ros = init_ros()
     try:
-        InspectApp.run(ros=ros, init_mode=mode, title="ROS Inspect")
+        app = InspectApp(ros=ros, init_target=target)
+        app.run()
     finally:
         ros.terminate()
 
 
 @click.command(help="Inspect ROS nodes (default)")
 def nodes() -> None:
-    inspect_common(InspectMode.Nodes)
+    inspect_common(InspectTarget.Nodes)
 
 
 @click.command(help="Inspect ROS topics")
 def topics() -> None:
-    inspect_common(InspectMode.Topics)
+    inspect_common(InspectTarget.Topics)
 
 
 @click.command(help="Inspect ROS services")
 def services() -> None:
-    inspect_common(InspectMode.Services)
+    inspect_common(InspectTarget.Services)
 
 
 @click.command(help="Inspect ROS actions")
 def actions() -> None:
-    inspect_common(InspectMode.Actions)
+    inspect_common(InspectTarget.Actions)
 
 
 @click.group(help="Terminal User Interface for ROS User", invoke_without_command=True)

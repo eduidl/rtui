@@ -111,6 +111,7 @@ class Ros1(RosInterface):
                 for srv, nodes in srvs
                 if node_name in nodes
             ],
+            is_ros2=False,
         )
 
     def get_topic_info(self, topic_name: str) -> TopicInfo:
@@ -155,6 +156,7 @@ class Ros1(RosInterface):
             name=service_name,
             types=[service_type] if service_type else [],
             servers=list(_filter_srv(srvs, service_name)),
+            is_ros2=False,
         )
 
     def get_action_info(self, action_name: str) -> t.NoReturn:
