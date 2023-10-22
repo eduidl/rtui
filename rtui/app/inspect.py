@@ -7,7 +7,7 @@ from textual.app import App
 from textual.binding import Binding
 
 from ..event import RosEntitySelected
-from ..ros import RosEntity, RosEntityType, RosInterface
+from ..ros import RosEntity, RosEntityType, RosInterface, is_ros2
 from ..screens import RosEntityInspection
 from ..utility import History
 
@@ -46,7 +46,8 @@ class InspectApp(App):
         self.add_mode("nodes", RosEntityInspection(ros, RosEntityType.Node))
         self.add_mode("topics", RosEntityInspection(ros, RosEntityType.Topic))
         self.add_mode("services", RosEntityInspection(ros, RosEntityType.Service))
-        self.add_mode("actions", RosEntityInspection(ros, RosEntityType.Action))
+        if is_ros2():
+            self.add_mode("actions", RosEntityInspection(ros, RosEntityType.Action))
 
     def show_ros_entity(self, entity: RosEntity, append_history: bool = True) -> None:
         if entity.type == RosEntityType.Node:
