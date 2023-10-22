@@ -7,7 +7,6 @@ from datetime import datetime
 from enum import IntEnum, auto
 from os import environ
 
-DISPLAY_ARRAY_LENGTH_MAX = 15
 SEPARATOR = "/"
 UNKNOWN_TYPE = "<unknown type>"
 
@@ -120,21 +119,6 @@ class RosInterface(ABC):
 
     @abstractmethod
     def get_action_info(self, action_name: str) -> ActionInfo:
-        ...
-
-    @abstractmethod
-    def subscribe_topic(
-        self, topic_name: str, callback: t.Callable[..., t.Any]
-    ) -> t.Any:
-        ...
-
-    @abstractmethod
-    def unregister_subscriber(self, sub: t.Any) -> None:
-        ...
-
-    @classmethod
-    @abstractmethod
-    def format_msg(cls, msg: t.Any, indent: int = 0) -> str:
         ...
 
 

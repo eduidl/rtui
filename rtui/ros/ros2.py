@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import array
 import typing as t
 from datetime import datetime
 from threading import Thread
 from time import sleep
 
-import numpy as np
 import rclpy
 import ros2action.api
 import ros2node.api
@@ -19,18 +17,8 @@ from rclpy.action import (
 )
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import QoSPresetProfiles
-from rclpy.subscription import Subscription
-from rosidl_runtime_py.utilities import get_message
 
-from .ros import (
-    DISPLAY_ARRAY_LENGTH_MAX,
-    ActionInfo,
-    NodeInfo,
-    RosInterface,
-    ServiceInfo,
-    TopicInfo,
-)
+from .ros import ActionInfo, NodeInfo, RosInterface, ServiceInfo, TopicInfo
 
 
 def split_full_path(path: str) -> tuple[str, str]:
@@ -219,50 +207,3 @@ class Ros2(RosInterface):
             servers=list(flatten(servers)),
             clients=list(flatten(clients)),
         )
-
-    def subscribe_topic(
-        self, topic_name: str, callback: t.Callable[..., t.Any]
-    ) -> Subscription | None:
-        types = self.__get_topic_types(topic_name)
-        if types:
-            qos = QoSPresetProfiles.get_from_short_key("sensor_data")
-            return self.node.create_subscription(
-                get_message(types[0]), topic_name, callback, qos
-            )
-        else:
-            return None
-
-    def unregister_subscriber(self, sub: Subscription) -> None:
-        self.node.destroy_subscription(sub)
-
-    @classmethod
-    def format_msg(cls, msg: t.Any, indent: int = 0) -> str:
-        out = ""
-
-        type_: str
-        for field, type_ in msg.get_fields_and_field_types().items():
-            val = getattr(msg, field)
-            out += f"\n{' ' * indent}{field}:"
-            if isinstance(val, (bool, bytes, int, float)):
-                out += f" {val!r}"
-            elif isinstance(val, str):
-                out += f' "{val}"'
-            elif isinstance(val, (list, array.array, np.ndarray)):
-                length = len(val)
-                if length == 0:
-                    out += " []"
-                elif length > DISPLAY_ARRAY_LENGTH_MAX:
-                    if "[" in type_:
-                        out += f' "<{type_}>"'
-                    else:
-                        out += f' "<{type_}, length: {length}>"'
-                elif isinstance(val[0], (bool, bytes, int, float, str)):
-                    out += f" {list(val)}"
-                else:
-                    for v in val:
-                        out += f"\n{' ' * (indent + 2)}-"
-                        out += cls.format_msg(v, indent + 4)
-            else:
-                out += cls.format_msg(val, indent + 2)
-
-        return out
