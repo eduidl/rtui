@@ -20,24 +20,24 @@ class RosEntityType(IntEnum):
 
 @dataclass(frozen=True, order=True)
 class RosEntity:
-    name: str
     type: RosEntityType
+    name: str
 
     @classmethod
     def new_node(cls, path: str) -> "RosEntity":
-        return cls(path, RosEntityType.Node)
+        return cls(RosEntityType.Node, path)
 
     @classmethod
     def new_topic(cls, path: str) -> "RosEntity":
-        return cls(path, RosEntityType.Topic)
+        return cls(RosEntityType.Topic, path)
 
     @classmethod
     def new_service(cls, path: str) -> "RosEntity":
-        return cls(path, RosEntityType.Service)
+        return cls(RosEntityType.Service, path)
 
     @classmethod
     def new_action(cls, path: str) -> "RosEntity":
-        return cls(path, RosEntityType.Action)
+        return cls(RosEntityType.Action, path)
 
 
 @dataclass(repr=True)
