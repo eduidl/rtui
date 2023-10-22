@@ -82,44 +82,6 @@ class TestRos1Interface(unittest.TestCase):
         self.assertEqual(info.types, ["std_srvs/SetBool"])
         self.assertEqual(info.servers, ["/dummy_node1"])
 
-    @ignore_warnings
-    def test_subscribe_topic(self):
-        class Count:
-            count: int = 0
-
-            def increment(self):
-                self.count += 1
-
-        count = Count()
-
-        def callback(msg):
-            self.assertEqual(msg.data, 42)
-            count.increment()
-
-        sub = self.ROS.subscribe_topic("/pub", callback)
-
-        rospy.sleep(0.1)
-
-        self.assertGreater(count.count, 5)
-        self.ROS.unregister_subscriber(sub)
-
-    @ignore_warnings
-    def test_unregister_subscriber(self):
-        topic_name = "/topic"
-        sub = self.ROS.subscribe_topic(topic_name, lambda x: ())
-
-        info = self.ROS.get_topic_info(topic_name)
-        self.assertTrue(
-            any(topic.startswith("/rtui_node") for topic, _ in info.subscribers)
-        )
-
-        self.ROS.unregister_subscriber(sub)
-
-        info = self.ROS.get_topic_info(topic_name)
-        self.assertTrue(
-            all(not topic.startswith("/rtui_node") for topic, _ in info.subscribers)
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

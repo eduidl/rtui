@@ -15,7 +15,7 @@ from ..event import RosEntityLinkClick
 from ..ros import RosEntity, RosEntityType, RosInterface
 from ..ros.exception import RosMasterException
 from ..utility import History
-from ..widgets import ActionView, NodeView, Separator, ServiceView, TopicEcho, TopicView
+from ..widgets import ActionView, NodeView, Separator, ServiceView, TopicView
 
 warnings.simplefilter("ignore", ResourceWarning)
 
@@ -32,7 +32,6 @@ class InspectApp(App):
     _mode: InspectMode = InspectMode.Nodes
     _entity: RosEntity | None = None
     _history: History[RosEntity] = History(20)
-    _topic_view: TopicEcho | None = None
 
     def __init__(
         self,
@@ -59,8 +58,6 @@ class InspectApp(App):
         self, entity: RosEntity, append_history: bool = True
     ) -> None:
         prev_mode = self._mode
-
-        await self.hide_topic_echo()
 
         self._entity = entity
         if entity.type == RosEntityType.Node:
@@ -122,30 +119,6 @@ class InspectApp(App):
     async def show_topic(self, topic_name: str) -> None:
         await self.body.update(TopicView(self._ros, topic_name))
 
-    async def show_topic_echo(self) -> None:
-        await self.hide_topic_echo()
-
-        if self._entity:
-            self._topic_view = TopicEcho(self._ros, self._entity.name)
-            await self.echo_view.update(self._topic_view)
-            self.horizontal.visible = True
-
-            self.grid.place(
-                main1=self.body,
-                main2=self.horizontal,
-                main3=self.echo_view,
-            )
-
-    async def hide_topic_echo(self) -> None:
-        if self._topic_view:
-            await self._topic_view.stop()
-            self._topic_view = None
-            self.horizontal.visible = False
-
-            self.grid.place(main=self.body)
-
-        await self.echo_view.update("")
-
     async def show_service(self, service_name: str) -> None:
         await self.body.update(ServiceView(self._ros, service_name))
 
@@ -156,7 +129,6 @@ class InspectApp(App):
         await self.bind("b", "back", "Prev Page", key_display="b")
         await self.bind("f", "forward", "Next Page", key_display="f")
         await self.bind("r", "reload", "Reload", key_display="r")
-        await self.bind("e", "toggle_echo", "Toggle Echo", key_display="e")
         await self.bind("q", "quit", "Quit", key_display="q")
 
     async def on_mount(self, _event: Mount) -> None:
@@ -176,15 +148,10 @@ class InspectApp(App):
             column="left,top-start|bottom-end",
             vertical="vertical,top-start|bottom-end",
             main="right,top-start|bottom-end",
-            main1="right,top",
-            main2="right,horizontal",
-            main3="right,bottom",
         )
 
         self.sidebar = ScrollView(auto_width=True)
         self.body = ScrollView(auto_width=True)
-        self.horizontal = Separator(horizontal=True)
-        self.echo_view = ScrollView(auto_width=True)
 
         self.grid.place(
             column=self.sidebar,
@@ -198,12 +165,6 @@ class InspectApp(App):
             self.body.window.widget.refresh(layout=True)
 
         self.set_interval(5.0, callback)
-
-        def topic_view_callback() -> None:
-            if self._topic_view:
-                self._topic_view.refresh()
-
-        self.set_interval(0.1, topic_view_callback)
 
     async def action_forward(self) -> None:
         entity = self._history.forward()
@@ -221,11 +182,6 @@ class InspectApp(App):
     async def action_toggle_echo(self) -> None:
         if self._mode != InspectMode.Topics or self._entity is None:
             return
-
-        if self._topic_view:
-            await self.hide_topic_echo()
-        else:
-            await self.show_topic_echo()
 
     async def action_quit(self) -> None:
         await super().action_quit()

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import sys
 import typing as t
 from datetime import datetime
@@ -13,13 +12,7 @@ from rosgraph import Master
 from typing_extensions import TypeAlias
 
 from .exception import RosMasterException
-from .ros import (
-    DISPLAY_ARRAY_LENGTH_MAX,
-    NodeInfo,
-    RosInterface,
-    ServiceInfo,
-    TopicInfo,
-)
+from .ros import NodeInfo, RosInterface, ServiceInfo, TopicInfo
 
 _RosMasterEachSystemState: TypeAlias = t.List[t.Tuple[str, t.List[str]]]
 _RosMasterSystemState: TypeAlias = t.Tuple[
@@ -159,56 +152,6 @@ class Ros1(RosInterface):
 
     def get_action_info(self, action_name: str) -> t.NoReturn:
         raise NotImplementedError("ROS1 does not support")
-
-    def subscribe_topic(
-        self, topic_name: str, callback: t.Callable[..., None]
-    ) -> t.Any:
-        topic_types = self.__get_topic_type()
-
-        topic_type = search_topic_type(topic_name, topic_types)
-        if topic_type is None:
-            raise RuntimeError("unknown type")
-
-        package_name, type_name = topic_type.split("/")
-
-        type_ = getattr(importlib.import_module(f"{package_name}.msg"), type_name)
-
-        return rospy.Subscriber(topic_name, type_, callback, queue_size=5)
-
-    def unregister_subscriber(self, sub: rospy.Subscriber) -> None:
-        sub.unregister()
-
-    @classmethod
-    def format_msg(cls, msg: t.Any, indent: int = 0) -> str:
-        out = ""
-        for field, type_ in zip(msg.__slots__, msg._slot_types):
-            val = getattr(msg, field)
-            out += f"\n{' ' * indent}{field}:"
-            if isinstance(val, (bool, int, float)):
-                out += f" {val}"
-            elif isinstance(val, str):
-                out += f' "{val}"'
-            elif isinstance(val, (list, tuple, bytes)):
-                length = len(val)
-                if length == 0:
-                    out += " []"
-                elif length > DISPLAY_ARRAY_LENGTH_MAX:
-                    if "[]" in type_:
-                        out += f' "<{type_}, length: {length}>"'
-                    else:
-                        out += f' "<{type_}>"'
-                elif isinstance(val, bytes):
-                    out += " [" + ", ".join(str(val[i]) for i in range(length)) + "]"
-                elif isinstance(val[0], (bool, int, float, str)):
-                    out += format(val)
-                else:
-                    for v in val:
-                        out += f"\n{' ' * (indent + 2)}-"
-                        out += cls.format_msg(v, indent + 4)
-            else:
-                out += cls.format_msg(val, indent + 2)
-
-        return out
 
 
 def search_topic_type(topic: str, topic_types: list[tuple[str, str]]) -> str | None:
