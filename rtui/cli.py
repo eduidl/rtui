@@ -1,11 +1,17 @@
+from os import environ
+
 import click
 
 from .app import InspectApp
-from .ros import RosEntityType, init_ros, is_ros2
+from .ros import RosClient, RosEntityType
+
+
+def is_ros2() -> bool:
+    return environ.get("ROS_VERSION") == "2"
 
 
 def inspect_common(target: RosEntityType) -> None:
-    ros = init_ros()
+    ros = RosClient()
     try:
         app = InspectApp(ros=ros, init_target=target)
         app.run()

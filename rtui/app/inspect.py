@@ -6,7 +6,7 @@ from textual.app import App
 from textual.binding import Binding
 
 from ..event import RosEntitySelected
-from ..ros import RosEntity, RosEntityType, RosInterface
+from ..ros import RosClient, RosEntity, RosEntityType
 from ..screens import RosEntityInspection
 from ..utility import History
 
@@ -14,7 +14,7 @@ warnings.simplefilter("ignore", ResourceWarning)
 
 
 class InspectApp(App):
-    _ros: RosInterface
+    _ros: RosClient
     _init_target: RosEntityType
     _history: History[RosEntity] = History(20)
 
@@ -28,7 +28,7 @@ class InspectApp(App):
 
     def __init__(
         self,
-        ros: RosInterface,
+        ros: RosClient,
         init_target: RosEntityType,
     ) -> None:
         super().__init__()

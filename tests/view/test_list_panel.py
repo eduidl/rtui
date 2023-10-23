@@ -5,12 +5,12 @@ from textual.containers import ScrollableContainer
 from textual.widgets import Static
 
 from rtui.event import RosEntitySelected
-from rtui.ros import RosEntityType, RosInterface, init_ros
+from rtui.ros import RosClient, RosEntityType
 from rtui.widgets import RosEntityListPanel
 
 
 class ExampleApp(App):
-    ros: RosInterface
+    ros: RosClient
     entity_type: RosEntityType
     debug: Static = Static("")
 
@@ -21,7 +21,7 @@ class ExampleApp(App):
     }
     """
 
-    def __init__(self, ros: RosInterface, entity_type: RosEntityType) -> None:
+    def __init__(self, ros: RosClient, entity_type: RosEntityType) -> None:
         self.ros = ros
         self.entity_type = entity_type
         super().__init__()
@@ -66,7 +66,7 @@ def main():
     if entity_type is None:
         raise RuntimeError("No entity specified")
 
-    ros = init_ros()
+    ros = RosClient()
     ExampleApp(ros, entity_type).run()
 
 

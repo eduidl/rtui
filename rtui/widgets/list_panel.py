@@ -4,17 +4,17 @@ from textual.app import ComposeResult
 from textual.widgets import Static, Tree
 
 from ..event import RosEntitySelected
-from ..ros import RosEntityType, RosInterface
+from ..ros import RosClient, RosEntityType
 
 
 class RosEntityListPanel(Static):
-    _ros: RosInterface
+    _ros: RosClient
     _entity_type: RosEntityType
     _tree: Tree[str]
 
     def __init__(
         self,
-        ros: RosInterface,
+        ros: RosClient,
         entity_type: RosEntityType,
         *,
         name: str | None = None,

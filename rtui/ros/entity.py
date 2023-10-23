@@ -42,6 +42,19 @@ class RosEntityInfo(ABC):
         ...
 
 
+def _common_entity(entities: list[tuple[str, str | None]], callback: str) -> str:
+    if not entities:
+        return " None"
+
+    out = ""
+    for name, type_ in entities:
+        out += f"\n [@click={callback}('{name}')]{name}[/]"
+        if type_ is not None:
+            out += f" \\[{type_}]"
+
+    return out
+
+
 @dataclass(repr=True)
 class NodeInfo(RosEntityInfo):
     name: str
@@ -51,38 +64,24 @@ class NodeInfo(RosEntityInfo):
     service_clients: list[tuple[str, str | None]] | None = None  # not support for ros1
     action_servers: list[tuple[str, str | None]] | None = None  # not support for ros1
     action_clients: list[tuple[str, str | None]] | None = None  # not support for ros1
-    is_ros2: bool = True
 
     def to_textual(self) -> str:
-        def common(
-            values: list[tuple[str, str | None]] | list[tuple[str, str]] | None,
-            callback: str,
-        ) -> str:
-            if not values:
-                return " None"
-
-            out = ""
-            for name, type in values:
-                out += f"\n  [@click={callback}('{name}')]{name}[/] \\[{type or UNKNOWN_TYPE}]"
-
-            return out
-
         text = f"""[b]Node:[/b] {self.name}
 
-[b]Publishers:[/b]{common(self.publishers, "topic_link")}
+[b]Publishers:[/b]{_common_entity(self.publishers, "topic_link")}
 
-[b]Subscribers:[/b]{common(self.subscribers, "topic_link")}
+[b]Subscribers:[/b]{_common_entity(self.subscribers, "topic_link")}
 
-[b]Service Servers:[/b]{common(self.service_servers, "service_link")}
+[b]Service Servers:[/b]{_common_entity(self.service_servers, "service_link")}
 """
-        if self.is_ros2:
-            text += f"""
-[b]Service Clients:[/b]{common(self.service_clients, "service_link")}
+        if self.service_clients is not None:
+            text += f"\n[b]Service Clients:[/b]{_common_entity(self.service_clients, 'service_link')}\n"
 
-[b]Action Servers:[/b]{common(self.action_servers, "action_link")}
+        if self.action_servers is not None:
+            text += f"\n[b]Action Servers:[/b]{_common_entity(self.action_servers, 'action_link')}\n"
 
-[b]Action Clients:[/b]{common(self.action_clients, "action_link")}
-"""
+        if self.action_clients is not None:
+            text += f"\n[b]Action Clients:[/b]{_common_entity(self.action_clients, 'action_link')}\n"
 
         return text
 
@@ -95,25 +94,13 @@ class TopicInfo(RosEntityInfo):
     subscribers: list[tuple[str, str | None]] = field(default_factory=list)
 
     def to_textual(self) -> str:
-        def common(nodes: list[tuple[str, str | None]]) -> str:
-            if not nodes:
-                return " None"
-
-            out = ""
-            for node, type_ in nodes:
-                out += f"\n  [@click=node_link('{node}')]{node}[/]"
-                if type_ is not None:
-                    out += f" [{type_}]"
-
-            return out
-
         return f"""[b]Topic:[/b] {self.name}
 
 [b]Type:[/b] {', '.join(self.types) or UNKNOWN_TYPE}
 
-[b]Publishers:[/b]{common(self.publishers)}
+[b]Publishers:[/b]{_common_entity(self.publishers, "node_link")}
 
-[b]Subscribers:[/b]{common(self.subscribers)}
+[b]Subscribers:[/b]{_common_entity(self.subscribers, "node_link")}
 """
 
 
@@ -121,29 +108,16 @@ class TopicInfo(RosEntityInfo):
 class ServiceInfo(RosEntityInfo):
     name: str
     types: list[str] = field(default_factory=list)
-    servers: list[str] | None = None  # not support for ros2
-    is_ros2: bool = True
+    servers: list[str, str | None] | None = None  # not support for ros2
 
     def to_textual(self) -> str:
-        def common(nodes: list[str] | None) -> str:
-            if not nodes:
-                return " None"
-
-            out = ""
-            for node in nodes:
-                out += f"\n  [@click=node_link('{node}')]{node}[/]"
-
-            return out
-
         text = f"""[b]Service:[/b] {self.name}
 
 [b]Type:[/b] {', '.join(self.types) or UNKNOWN_TYPE}
 """
 
-        if not self.is_ros2:
-            text += f"""
-[b]Servers:[/b]{common(self.servers)}
-"""
+        if self.servers is not None:
+            text += f"\n[b]Servers:[/b]{_common_entity(self.servers, 'node_link')}\n"
 
         return text
 
@@ -157,21 +131,11 @@ class ActionInfo(RosEntityInfo):
     clients: list[tuple[str, str]] = field(default_factory=list)
 
     def to_textual(self) -> str:
-        def common(nodes: list[tuple[str, str]]) -> str:
-            if not nodes:
-                return " None"
-
-            out = ""
-            for node, type_ in nodes:
-                out += f"\n  [@click=node_link('{node}')]{node}[/] \\[{type_}]"
-
-            return out
-
         return f"""[b]Action:[/b] {self.name}
 
 [b]Type:[/b] {', '.join(self.types) or UNKNOWN_TYPE}
 
-[b]Action Servers:[/b]{common(self.servers)}
+[b]Action Servers:[/b]{_common_entity(self.servers, "node_link")}
 
-[b]Action Clients:[/b]{common(self.clients)}
+[b]Action Clients:[/b]{_common_entity(self.clients, "node_link")}
 """

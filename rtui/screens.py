@@ -5,7 +5,7 @@ from textual.containers import Horizontal, ScrollableContainer
 from textual.screen import Screen
 from textual.widgets import Footer
 
-from .ros import RosEntity, RosEntityType, RosInterface
+from .ros import RosClient, RosEntity, RosEntityType
 from .widgets import RosEntityInfoPanel, RosEntityListPanel
 
 
@@ -27,7 +27,7 @@ class RosEntityInspection(Screen):
     }
     """
 
-    def __init__(self, ros: RosInterface, entity_type: RosEntityType) -> None:
+    def __init__(self, ros: RosClient, entity_type: RosEntityType) -> None:
         super().__init__()
         self._entity_type = entity_type
         self._entity_name = None

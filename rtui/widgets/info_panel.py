@@ -3,12 +3,12 @@ from __future__ import annotations
 from textual.widgets import Static
 
 from ..event import RosEntitySelected
-from ..ros import RosEntity, RosInterface
+from ..ros import RosClient, RosEntity
 from ..ros.exception import RosMasterException
 
 
 class RosEntityInfoPanel(Static):
-    _ros: RosInterface
+    _ros: RosClient
     _entity: RosEntity | None = None
     _update_interval: float | None = None
 
@@ -20,7 +20,7 @@ class RosEntityInfoPanel(Static):
 
     def __init__(
         self,
-        ros: RosInterface,
+        ros: RosClient,
         entity: RosEntity | None = None,
         update_interval: float | None = None,
         *,
