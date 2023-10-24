@@ -4,7 +4,7 @@ import typing as t
 import unittest
 import warnings
 
-from rtui.ros.interface.ros2 import Ros2
+from rtui_app.ros.interface.ros2 import Ros2
 
 from .node.dummy_node1 import DummyNode1
 from .node.dummy_node2 import DummyNode2

@@ -4,9 +4,9 @@ from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
 from textual.widgets import Static
 
-from rtui.event import RosEntitySelected
-from rtui.ros import RosClient, RosEntity, RosEntityType
-from rtui.widgets import RosEntityInfoPanel
+from rtui_app.event import RosEntitySelected
+from rtui_app.ros import RosClient, RosEntity, RosEntityType
+from rtui_app.widgets import RosEntityInfoPanel
 
 
 class ExampleApp(App):

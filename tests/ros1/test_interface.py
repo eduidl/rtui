@@ -7,7 +7,7 @@ import warnings
 
 import rospy
 
-from rtui.ros.interface.ros1 import Ros1
+from rtui_app.ros.interface.ros1 import Ros1
 
 
 def ignore_warnings(test_func):
