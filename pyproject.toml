@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rtui"
-version = "0.1.0"
+version = "0.2.0"
 description = "A TUI tool for ROS1/2"
 authors = ["Yuma Hiramatsu <yuma.hiramatsu@gmail.com>"]
 license = "Apache License 2.0"
