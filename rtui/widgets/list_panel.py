@@ -37,8 +37,16 @@ class RosEntityListPanel(Static):
 
     def update_items(self) -> None:
         self._tree.clear()
-        for entity in self._ros.list_entities(self._entity_type):
-            self._tree.root.add_leaf(entity, entity)
+
+        entities = self._ros.list_entities(self._entity_type)
+        groups = {e.group for e in entities if e.group is not None}
+        parents = {None: self._tree.root}
+
+        for group in sorted(groups):
+            parents[group] = self._tree.root.add(group)
+
+        for entity in entities:
+            parents[entity.group].add_leaf(entity.name, entity.full_name)
 
     def compose(self) -> ComposeResult:
         yield self._tree

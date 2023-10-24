@@ -37,10 +37,8 @@ class InspectApp(App):
         self._init_target = init_target
 
         for t in RosEntityType:
-            if self._ros.is_ros1() and t == RosEntityType.Action:
-                continue
-
-            self.add_mode(t.name, RosEntityInspection(ros, t))
+            if self._ros.available(t):
+                self.add_mode(t.name, RosEntityInspection(ros, t))
 
     def show_ros_entity(self, entity: RosEntity, append_history: bool = True) -> None:
         self.switch_mode(entity.type.name)

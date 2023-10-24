@@ -27,3 +27,15 @@ class RosEntitySelected(Message):
     @classmethod
     def new_action(cls, name: str) -> "RosEntitySelected":
         return cls(RosEntityType.Action, name)
+
+    @classmethod
+    def new_msg_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.MsgType, name)
+
+    @classmethod
+    def new_srv_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.SrvType, name)
+
+    @classmethod
+    def new_action_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.ActionType, name)

@@ -5,9 +5,11 @@ import typing as t
 from threading import Thread
 
 import rosgraph
+import rosmsg
 import rospy
 import rosservice
 from rosgraph import Master
+from rospkg import RosPack
 from typing_extensions import TypeAlias
 
 from ..exception import RosMasterException
@@ -19,7 +21,7 @@ _RosMasterSystemState: TypeAlias = t.Tuple[
 ]
 
 
-def _search_by_topic_type(
+def _search_topic_type(
     topic_types: list[tuple[str, str]], topic_name: str
 ) -> str | None:
     matches: list[str] = [
@@ -30,7 +32,7 @@ def _search_by_topic_type(
     return None
 
 
-def _search_by_topic_name(
+def _search_nodes(
     topics: _RosMasterEachSystemState, topic_name: str
 ) -> t.Generator[tuple[str, None], None, None]:
     for topic, nodes in topics:
@@ -87,7 +89,7 @@ class Ros1(RosInterface):
         pubs, _, _ = self.__get_system_state()
         topic_types = self.__get_topic_type()
         return list(
-            (topic, _search_by_topic_type(topic_types, topic))
+            (topic, _search_topic_type(topic_types, topic))
             for topic, nodes in pubs
             if node_name in nodes
         )
@@ -96,7 +98,7 @@ class Ros1(RosInterface):
         _, subs, _ = self.__get_system_state()
         topic_types = self.__get_topic_type()
         return list(
-            (topic, _search_by_topic_type(topic_types, topic))
+            (topic, _search_topic_type(topic_types, topic))
             for topic, nodes in subs
             if node_name in nodes
         )
@@ -120,16 +122,16 @@ class Ros1(RosInterface):
 
     def get_topic_types(self, topic_name: str) -> list[str]:
         topic_types = self.__get_topic_type()
-        topic_type = _search_by_topic_type(topic_types, topic_name)
+        topic_type = _search_topic_type(topic_types, topic_name)
         return [topic_type] if topic_type else []
 
     def get_topic_publishers(self, topic_name: str) -> list[tuple[str, str | None]]:
         pubs, _, _ = self.__get_system_state()
-        return list(_search_by_topic_name(pubs, topic_name))
+        return list(_search_nodes(pubs, topic_name))
 
     def get_topic_subscribers(self, topic_name: str) -> list[tuple[str, str | None]]:
         _, subs, _ = self.__get_system_state()
-        return list(_search_by_topic_name(subs, topic_name))
+        return list(_search_nodes(subs, topic_name))
 
     def get_service_types(self, service_name: str) -> list[str]:
         type = self.__get_service_type(service_name)
@@ -137,10 +139,7 @@ class Ros1(RosInterface):
 
     def get_service_servers(self, service_name: str) -> list[str]:
         _, _, srvs = self.__get_system_state()
-        return list(_search_by_topic_name(srvs, service_name))
-
-    def get_action_types(self, action_name: str) -> list[str]:
-        raise RuntimeError()
+        return list(_search_nodes(srvs, service_name))
 
     def get_action_types(self, action_name: str) -> list[str]:
         raise NotImplementedError("ROS1 does not support action")
@@ -151,6 +150,15 @@ class Ros1(RosInterface):
     def get_action_clients(self, action_name: str) -> list[str]:
         raise NotImplementedError("ROS1 does not support action")
 
+    def get_msg_definition(self, msg_type: str) -> str:
+        return rosmsg.get_msg_text(msg_type)
+
+    def get_srv_definition(self, srv_type: str) -> str:
+        return rosmsg.get_srv_text(srv_type)
+
+    def get_action_definition(self, action_type: str) -> str:
+        raise NotImplementedError("ROS1 does not support action")
+
     def list_nodes(self) -> list[str]:
         state = self.__get_system_state()
         nodes: list[str] = []
@@ -159,16 +167,35 @@ class Ros1(RosInterface):
                 nodes.extend((n for n in l if not n.startswith("/rtui_node")))
         return sorted(set(nodes))
 
-    def list_topics(self) -> list[str]:
-        pubs, subs, _ = self.__get_system_state()
-        pub_names = {pub for pub, _ in pubs}
-        sub_names = {sub for sub, _ in subs}
-        names = sorted(pub_names.union(sub_names))
+    def list_topics(self, type: str | None = None) -> list[str] | None:
+        topic_types = self.__get_topic_type()
+        names = sorted(
+            topic for topic, types in topic_types if type is None or type in types
+        )
         return names
 
-    def list_services(self) -> list[str]:
+    def list_services(self, type: str | None = None) -> list[str]:
+        if type is not None:
+            # ROS1 does not support filtering by type
+            return None
+
         _, _, srvs = self.__get_system_state()
         return sorted(s for s, _ in srvs if not s.startswith("/rtui_node"))
 
     def list_actions(self) -> t.NoReturn:
-        raise NotImplementedError("ROS1 does not support")
+        raise NotImplementedError("ROS1 does not support action")
+
+    @staticmethod
+    def __common_list_types(kind: str) -> t.Generator[str, None, None]:
+        for p, dir in sorted(rosmsg.iterate_packages(RosPack(), f".{kind}")):
+            for file in rosmsg._list_types(dir, kind, f".{kind}"):
+                yield f"{p}/{file}"
+
+    def list_msg_types(self) -> list[str]:
+        return self.__common_list_types("msg")
+
+    def list_srv_types(self) -> list[str]:
+        return self.__common_list_types("srv")
+
+    def list_action_types(self) -> t.NoReturn:
+        raise NotImplementedError("ROS1 does not support action")

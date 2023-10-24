@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing as t
+from pathlib import Path
 from threading import Thread
 from time import sleep
 
@@ -16,6 +17,12 @@ from rclpy.action import (
 )
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rosidl_runtime_py import (
+    get_action_interfaces,
+    get_interface_path,
+    get_message_interfaces,
+    get_service_interfaces,
+)
 
 from .base import RosInterface, RosVersion
 
@@ -46,6 +53,15 @@ def _flatten_name_types(
         else:
             for type_ in types:
                 yield name, type_
+
+
+def _list_types_common(interfaces: dict[str, list[str]]) -> list[str]:
+    full_types = []
+    for package, type_names in interfaces.items():
+        for type_name in type_names:
+            full_types.append(f"{package}/{type_name}")
+
+    return sorted(full_types)
 
 
 class Ros2(RosInterface):
@@ -202,39 +218,46 @@ class Ros2(RosInterface):
         )
         return list(_flatten_name_types(clients))
 
+    @staticmethod
+    def __common_get_type_definition(type: str) -> str:
+        return Path(get_interface_path(type)).read_text()
+
+    def get_msg_definition(self, msg_type: str) -> str:
+        return self.__common_get_type_definition(msg_type)
+
+    def get_srv_definition(self, msg_type: str) -> str:
+        return self.__common_get_type_definition(msg_type)
+
+    def get_action_definition(self, msg_type: str) -> str:
+        return self.__common_get_type_definition(msg_type)
+
     def list_nodes(self) -> list[str]:
         nodes = ros2node.api.get_node_names(node=self.node)
         return sorted({node.full_name for node in nodes})
 
-    def list_topics(self) -> list[str]:
+    def list_topics(self, type: str | None = None) -> list[str]:
         topics = ros2topic.api.get_topic_names_and_types(node=self.node)
-        names = sorted({name for name, _ in topics})
-        return names
+        return sorted({name for name, types in topics if type is None or type in types})
 
-    def list_services(self) -> list[str]:
-        def filter(_name: str, types: list[str]) -> bool:
-            if len(types) == 0:
-                return True
-
-            BLOCK_LIST = [
-                "rcl_interfaces/srv/DescribeParameters",
-                "rcl_interfaces/srv/GetParameters",
-                "rcl_interfaces/srv/GetParameterTypes",
-                "rcl_interfaces/srv/ListParameters",
-                "rcl_interfaces/srv/SetParameters",
-                "rcl_interfaces/srv/SetParametersAtomically",
-            ]
-
-            if types[0] in BLOCK_LIST:
-                return False
-
-            return True
-
+    def list_services(self, type: str | None = None) -> list[str]:
         services = ros2service.api.get_service_names_and_types(node=self.node)
-        names = sorted({name for name, types in services if filter(name, types)})
+        names = sorted(
+            {name for name, types in services if type is None or type in types}
+        )
         return names
 
-    def list_actions(self) -> list[str]:
+    def list_actions(self, type: str | None = None) -> list[str]:
         actions = ros2action.api.get_action_names_and_types(node=self.node)
-        names = sorted({name for name, _ in actions})
+        names = sorted(
+            {name for name, types in actions if type is None or type in types}
+        )
         return names
+
+    def list_msg_types(self) -> list[str]:
+        return _list_types_common(get_message_interfaces())
+
+    def list_srv_types(self) -> list[str]:
+        return _list_types_common(get_service_interfaces())
+
+    def list_action_types(self) -> list[str]:
+        return _list_types_common(get_action_interfaces())

@@ -14,7 +14,7 @@ class RosEntityInfoPanel(Static):
 
     DEFAULT_CSS = """
     RosEntityInfoPanel {
-        padding: 1;
+        padding: 1 2;
     }
     """
 
@@ -75,3 +75,12 @@ class RosEntityInfoPanel(Static):
 
     def action_action_link(self, name: str) -> None:
         self.post_message(RosEntitySelected.new_action(name))
+
+    def action_msg_type_link(self, name: str) -> None:
+        self.post_message(RosEntitySelected.new_msg_type(name))
+
+    def action_srv_type_link(self, name: str) -> None:
+        self.post_message(RosEntitySelected.new_srv_type(name))
+
+    def action_action_type_link(self, name: str) -> None:
+        self.post_message(RosEntitySelected.new_action_type(name))

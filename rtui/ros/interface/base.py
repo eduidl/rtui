@@ -82,17 +82,41 @@ class RosInterface(ABC):
         ...
 
     @abstractmethod
+    def get_msg_definition(self, msg_type: str) -> str:
+        ...
+
+    @abstractmethod
+    def get_srv_definition(self, srv_type: str) -> str:
+        ...
+
+    @abstractmethod
+    def get_action_definition(self, action_type: str) -> str:
+        ...
+
+    @abstractmethod
     def list_nodes(self) -> list[str]:
         ...
 
     @abstractmethod
-    def list_topics(self) -> list[str]:
+    def list_topics(self, type: str | None) -> list[str]:
         ...
 
     @abstractmethod
-    def list_services(self) -> list[str]:
+    def list_services(self, type: str | None) -> list[str]:
         ...
 
     @abstractmethod
-    def list_actions(self) -> list[str]:
+    def list_actions(self, type: str | None) -> list[str]:
+        ...
+
+    @abstractmethod
+    def list_msg_types(self) -> list[str]:
+        ...
+
+    @abstractmethod
+    def list_srv_types(self) -> list[str]:
+        ...
+
+    @abstractmethod
+    def list_action_types(self) -> list[str]:
         ...
