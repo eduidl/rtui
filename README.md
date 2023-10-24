@@ -1,5 +1,7 @@
 # rtui
 
+[![PyPI - Version](https://img.shields.io/pypi/v/rtui-app)](https://pypi.org/project/rtui-app/)
+
 rtui is ROS Terminal User Interface
 
 ## Support
@@ -14,16 +16,20 @@ rtui is ROS Terminal User Interface
 
 ## Install
 
+> **Note**  
+> Package name is changed because rtui is already used by other package.  
+> If you have already installed rtui, please uninstall it and install rtui-app.
+
 Via [pipx](https://github.com/pypa/pipx) (Recommended)
 
 ```sh-session
-$ pipx install git+https://github.com/eduidl/rtui.git
+$ pipx install rtui-app
 ```
 
 Pip
 
 ```sh-session
-$ pip3 install --user git+https://github.com/eduidl/rtui.git
+$ pip3 install --user rtui-app
 ```
 
 ## Demo
