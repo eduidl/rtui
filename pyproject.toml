@@ -3,7 +3,9 @@ name = "rtui"
 version = "0.2.0"
 description = "A TUI tool for ROS1/2"
 authors = ["Yuma Hiramatsu <yuma.hiramatsu@gmail.com>"]
+repository = "https://github.com/eduidl/rtui"
 license = "Apache License 2.0"
+readme = "README.md"
 
 [tool.poetry.scripts]
 rtui = "rtui.cli:main"
