@@ -6,7 +6,6 @@ rtui is ROS Terminal User Interface
 
 - Python
   - 3.8+
-  - Latest Poetry does not support Python 3.6
 - ROS1
   - noetic
 - ROS2
@@ -29,12 +28,11 @@ $ pip3 install --user git+https://github.com/eduidl/rtui.git
 
 ## Demo
 
-![demo](doc/demo.gif)
+[demo](https://github.com/eduidl/rtui/assets/25898373/901f58a8-98f6-4f23-82d6-404d15d5f35b)
 
 ## Usage
 
 ```
-$ rtui --help
 Usage: rtui [OPTIONS] COMMAND [ARGS]...
 
   Terminal User Interface for ROS User
@@ -43,13 +41,14 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  actions   Inspect ROS actions 
-  nodes     Inspect ROS nodes
-  services  Inspect ROS services
-  topics    Inspect ROS topics
+  action   Inspect ROS actions
+  node     Inspect ROS nodes (default)
+  service  Inspect ROS services
+  topic    Inspect ROS topics
+  type     Inspect ROS types
 ```
 
-- nodes/topics/services/actions
+- node/topic/service/action/type
   - get a list of nodes, topics, or etc.
   - get an information about specific node, topic, or etc.
   - mouse operation
