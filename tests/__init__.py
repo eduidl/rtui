@@ -1,13 +1,12 @@
 import unittest
-
-from rtui.ros import is_ros1, is_ros2
+from os import environ
 
 from .test_history import TestHistory
 
-if is_ros1():
+if environ.get("ROS_VERSION") == "1":
     from .ros1 import *
 
-if is_ros2():
+if environ.get("ROS_VERSION") == "2":
     from .ros2 import *
 
 

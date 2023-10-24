@@ -1,4 +1,5 @@
 from . import exception
+from .client import RosClient
 from .entity import (
     ActionInfo,
     NodeInfo,
@@ -7,19 +8,15 @@ from .entity import (
     ServiceInfo,
     TopicInfo,
 )
-from .ros import RosInterface, get_ros_cls, init_ros, is_ros1, is_ros2
 
 __all__ = [
     "exception",
     "ActionInfo",
     "NodeInfo",
+    "RosClient",
     "RosEntity",
     "RosEntityType",
     "RosInterface",
     "ServiceInfo",
     "TopicInfo",
-    "get_ros_cls",
-    "init_ros",
-    "is_ros1",
-    "is_ros2",
 ]

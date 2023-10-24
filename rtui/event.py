@@ -1,19 +1,41 @@
 from __future__ import annotations
 
-import rich.repr
-from textual._types import MessageTarget
 from textual.message import Message
 
-from .ros import RosEntity
+from .ros import RosEntity, RosEntityType
 
 
-@rich.repr.auto
-class RosEntityLinkClick(Message, bubble=True):
+class RosEntitySelected(Message):
     entity: RosEntity
 
-    def __init__(self, sender: MessageTarget, entity: RosEntity) -> None:
-        self.entity = entity
-        super().__init__(sender)
+    def __init__(self, type: RosEntityType, name: str) -> None:
+        super().__init__()
+        self.entity = RosEntity(type=type, name=name)
 
-    def __rich_repr__(self) -> rich.repr.Result:
-        yield "entity", self.entity
+    @classmethod
+    def new_node(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.Node, name)
+
+    @classmethod
+    def new_topic(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.Topic, name)
+
+    @classmethod
+    def new_service(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.Service, name)
+
+    @classmethod
+    def new_action(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.Action, name)
+
+    @classmethod
+    def new_msg_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.MsgType, name)
+
+    @classmethod
+    def new_srv_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.SrvType, name)
+
+    @classmethod
+    def new_action_type(cls, name: str) -> "RosEntitySelected":
+        return cls(RosEntityType.ActionType, name)

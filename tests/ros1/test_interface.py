@@ -7,7 +7,7 @@ import warnings
 
 import rospy
 
-from rtui.ros import init_ros
+from rtui.ros.interface.ros1 import Ros1
 
 
 def ignore_warnings(test_func):
@@ -27,7 +27,7 @@ class TestRos1Interface(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.NODE1 = sp.Popen("python3 tests/ros1/node/dummy_node1.py".split())
         cls.NODE2 = sp.Popen("python3 tests/ros1/node/dummy_node2.py".split())
-        cls.ROS = init_ros()
+        cls.ROS = Ros1()
         rospy.sleep(3)
 
     @classmethod
@@ -38,6 +38,51 @@ class TestRos1Interface(unittest.TestCase):
             cls.NODE2.kill()
 
         cls.ROS.terminate()
+
+    def test_get_node_publishers(self):
+        publishers = self.ROS.get_node_publishers("/dummy_node1")
+        self.assertIn(("/topic", "std_msgs/String"), publishers)
+        self.assertIn(("/pub", "std_msgs/Int32"), publishers)
+
+    def test_get_node_subscribers(self):
+        subscribers = self.ROS.get_node_subscribers("/dummy_node1")
+        self.assertIn(("/sub", "sensor_msgs/Image"), subscribers)
+
+    def test_get_node_service_servers(self):
+        servers = self.ROS.get_node_service_servers("/dummy_node1")
+        self.assertIn(("/server", "std_srvs/SetBool"), servers)
+
+    def test_get_node_service_clients(self):
+        # Not supported
+        self.assertIsNone(self.ROS.get_node_service_clients("/dummy_node1"))
+
+    def test_get_node_action_servers(self):
+        # Not supported
+        self.assertIsNone(self.ROS.get_node_action_servers("/dummy_node1"))
+
+    def test_get_node_action_clients(self):
+        # Not supported
+        self.assertIsNone(self.ROS.get_node_action_clients("/dummy_node1"))
+
+    def test_get_topic_types(self):
+        topic_types = self.ROS.get_topic_types("/topic")
+        self.assertEqual(topic_types, ["std_msgs/String"])
+
+    def test_get_topic_publishers(self):
+        publishers = self.ROS.get_topic_publishers("/topic")
+        self.assertEqual(publishers, [("/dummy_node1", None)])
+
+    def test_get_topic_subscribers(self):
+        subscribers = self.ROS.get_topic_subscribers("/topic")
+        self.assertEqual(subscribers, [("/dummy_node2", None)])
+
+    def test_get_service_types(self):
+        self.assertEqual(self.ROS.get_service_types("/server"), ["std_srvs/SetBool"])
+
+    def test_get_service_servers(self):
+        self.assertEqual(
+            self.ROS.get_service_servers("/server"), [("/dummy_node1", None)]
+        )
 
     def test_list_nodes(self):
         nodes = self.ROS.list_nodes()
@@ -54,33 +99,6 @@ class TestRos1Interface(unittest.TestCase):
         services = self.ROS.list_services()
         self.assertIn("/server", services)
         self.assertNotIn("/client", services)
-
-    def test_get_node_info(self):
-        node_name = "/dummy_node1"
-        info = self.ROS.get_node_info(node_name)
-        self.assertEqual(info.name, node_name)
-        self.assertIn(("/topic", "std_msgs/String"), info.publishers)
-        self.assertIn(("/pub", "std_msgs/Int32"), info.publishers)
-        self.assertIn(("/sub", "sensor_msgs/Image"), info.subscribers)
-        self.assertIn(("/server", "std_srvs/SetBool"), info.service_servers)
-        self.assertIsNone(info.service_clients)
-        self.assertIsNone(info.action_servers)
-        self.assertIsNone(info.action_clients)
-
-    def test_get_topic_info(self):
-        topic_name = "/topic"
-        info = self.ROS.get_topic_info(topic_name)
-        self.assertEqual(info.name, topic_name)
-        self.assertEqual(info.types, ["std_msgs/String"])
-        self.assertEqual(info.publishers, [("/dummy_node1", None)])
-        self.assertEqual(info.subscribers, [("/dummy_node2", None)])
-
-    def test_get_service_info(self):
-        service_name = "/server"
-        info = self.ROS.get_service_info(service_name)
-        self.assertEqual(info.name, service_name)
-        self.assertEqual(info.types, ["std_srvs/SetBool"])
-        self.assertEqual(info.servers, ["/dummy_node1"])
 
 
 if __name__ == "__main__":

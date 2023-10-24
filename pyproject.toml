@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rtui"
-version = "0.1.0"
+version = "0.2.0"
 description = "A TUI tool for ROS1/2"
 authors = ["Yuma Hiramatsu <yuma.hiramatsu@gmail.com>"]
 license = "Apache License 2.0"
@@ -11,8 +11,7 @@ rtui = "rtui.cli:main"
 [tool.poetry.dependencies]
 python = "^3.8"
 click = "^8.1.3"
-rich = "^12.0.0"
-textual = "^0.1.18"
+textual = "^0.40"
 typing-extensions = "^4.3.0"
 
 # ROS1/2
