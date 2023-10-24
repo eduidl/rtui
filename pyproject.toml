@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rtui"
+name = "rtui-app"
 version = "0.2.0"
 description = "A TUI tool for ROS1/2"
 authors = ["Yuma Hiramatsu <yuma.hiramatsu@gmail.com>"]
@@ -8,7 +8,7 @@ license = "Apache License 2.0"
 readme = "README.md"
 
 [tool.poetry.scripts]
-rtui = "rtui.cli:main"
+rtui = "rtui_app.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -35,9 +35,9 @@ taskipy = "^1"
 [tool.taskipy.tasks]
 check_all = "task check && task check_type"
 check = "task check_lint && task check_format"
-check_lint = "flake8 rtui"
+check_lint = "flake8 rtui_app"
 check_format = "black . --check && isort . --check --diff"
-check_type = "mypy rtui"
+check_type = "mypy rtui_app"
 format = "black . && isort ."
 test = "python -m unittest tests -v"
 
